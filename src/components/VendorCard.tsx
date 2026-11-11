@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Download, MapPin, Star } from "lucide-react";
 import { mediaUrl } from "../api";
 
-interface P { id: string; name: string; logo_url: string | null; address: string | null; rating: number | null; review_count: number }
+interface P { id: string; name: string; logo_url: string | null; logo_position_x?: number; logo_position_y?: number; address: string | null; rating: number | null; review_count: number }
 
 export default function VendorCard({ v }: { v: P }) {
   const qrRef = useRef<HTMLDivElement>(null);
@@ -37,7 +37,12 @@ export default function VendorCard({ v }: { v: P }) {
         ctx.beginPath();
         ctx.roundRect(72, 94, 210, 210, 24);
         ctx.clip();
-        ctx.drawImage(logo, 72, 94, 210, 210);
+        const scale = Math.max(210 / logo.naturalWidth, 210 / logo.naturalHeight);
+        const sourceWidth = 210 / scale;
+        const sourceHeight = 210 / scale;
+        const sourceX = (logo.naturalWidth - sourceWidth) * (v.logo_position_x ?? 50) / 100;
+        const sourceY = (logo.naturalHeight - sourceHeight) * (v.logo_position_y ?? 50) / 100;
+        ctx.drawImage(logo, sourceX, sourceY, sourceWidth, sourceHeight, 72, 94, 210, 210);
         ctx.restore();
       } else {
         ctx.fillStyle = "#1f5d3a";
@@ -106,7 +111,7 @@ export default function VendorCard({ v }: { v: P }) {
   return (
     <div className="card max-w-xl p-4">
       <div className="flex items-center gap-4">
-      {v.logo_url ? <img crossOrigin="anonymous" src={mediaUrl(v.logo_url)} alt="" className="h-16 w-16 rounded-[30%] border border-line object-cover" />
+      {v.logo_url ? <img crossOrigin="anonymous" src={mediaUrl(v.logo_url)} alt="" style={{ objectPosition: `${v.logo_position_x ?? 50}% ${v.logo_position_y ?? 50}%` }} className="h-16 w-16 rounded-[30%] border border-line object-cover" />
         : <div className="grid h-16 w-16 place-items-center rounded-[30%] bg-brand font-display text-2xl font-bold text-white">{v.name[0]}</div>}
       <div className="min-w-0 flex-1">
         <p className="truncate font-display text-lg font-bold">{v.name}</p>

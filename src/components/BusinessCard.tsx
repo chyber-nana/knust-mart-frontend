@@ -10,7 +10,10 @@ export interface Business {
   bio: string | null;
   address: string | null;
   logo_url: string | null;
+  logo_position_x?: number;
+  logo_position_y?: number;
   banner_url: string | null;
+  banner_position_x?: number;
   banner_position_y: number;
   rating: number | null;
   review_count: number;
@@ -25,12 +28,12 @@ export default function BusinessCard({ business, featured = false }: { business:
     >
       <div className={`relative overflow-visible bg-brand/10 ${featured ? "h-32" : "h-24"}`}>
         {business.banner_url
-          ? <img src={mediaUrl(business.banner_url)} alt="" style={{ objectPosition: `center ${business.banner_position_y ?? 50}%` }} className="h-full w-full rounded-t-[inherit] object-cover transition duration-500 group-hover:scale-[1.04]" />
+          ? <img src={mediaUrl(business.banner_url)} alt="" style={{ objectPosition: `${business.banner_position_x ?? 50}% ${business.banner_position_y ?? 50}%` }} className="h-full w-full rounded-t-[inherit] object-cover transition duration-500 group-hover:scale-[1.04]" />
           : <div className="relative h-full overflow-hidden rounded-t-[inherit] bg-[#e7ecdf]"><span className="absolute -right-4 -top-10 h-32 w-32 rounded-full border-[18px] border-white/60" /><span className="absolute bottom-[-52px] right-20 h-28 w-28 rounded-full bg-[#d6dfcd]" /></div>}
         <span className="absolute right-3 top-3 rounded-full border border-white/70 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.13em] text-brand">
           {business.user_type === "student" ? "Student-run" : "Campus vendor"}
         </span>
-        <div className="absolute bottom-0 left-4 z-10 translate-y-1/2 rounded-[30%] border-[3px] border-white shadow-sm"><Avatar src={business.logo_url} name={business.name} size="md" /></div>
+        <div className="absolute bottom-0 left-4 z-10 translate-y-1/2 rounded-[30%] border-[3px] border-white shadow-sm"><Avatar src={business.logo_url} name={business.name} size="md" positionX={business.logo_position_x} positionY={business.logo_position_y} /></div>
       </div>
       <div className="relative px-4 pb-4 pt-9">
         <ArrowUpRight size={17} className="absolute right-4 top-4 text-ink/35 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand" />

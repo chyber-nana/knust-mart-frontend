@@ -8,7 +8,7 @@ import SellerBadge from "../components/SellerBadge";
 import VendorCard from "../components/VendorCard";
 import Avatar from "../components/Avatar";
 
-interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; logo_url: string | null; banner_url: string | null; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
+interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; logo_url: string | null; logo_position_x: number; logo_position_y: number; banner_url: string | null; banner_position_x: number; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
 
 export default function Vendor() {
   const { id } = useParams();
@@ -37,8 +37,8 @@ export default function Vendor() {
   return (
     <>
       <div className="relative mb-12 aspect-[2.4/1] overflow-visible rounded-[1.4rem] border border-line bg-brand/90 sm:mb-14 sm:aspect-[3.4/1]">
-        {v.banner_url && <img src={mediaUrl(v.banner_url)} alt="" style={{ objectPosition: `center ${v.banner_position_y ?? 50}%` }} className="h-full w-full rounded-[inherit] object-cover" />}
-        <div className="absolute -bottom-8 left-4 z-10 rounded-[30%] border-4 border-paper shadow-sm sm:-bottom-10 sm:left-6"><Avatar src={v.logo_url} name={v.name} size="lg" /></div>
+        {v.banner_url && <img src={mediaUrl(v.banner_url)} alt="" style={{ objectPosition: `${v.banner_position_x ?? 50}% ${v.banner_position_y ?? 50}%` }} className="h-full w-full rounded-[inherit] object-cover" />}
+        <div className="absolute -bottom-8 left-4 z-10 rounded-[30%] border-4 border-paper shadow-sm sm:-bottom-10 sm:left-6"><Avatar src={v.logo_url} name={v.name} size="lg" positionX={v.logo_position_x} positionY={v.logo_position_y} /></div>
       </div>
       <div className="flex flex-wrap items-end gap-3 px-3 sm:px-6">
         <div className="min-w-0 flex-1 pb-1"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1><SellerBadge type={v.user_type} /></div>
