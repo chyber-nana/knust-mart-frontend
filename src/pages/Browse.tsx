@@ -3,6 +3,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, Check, Search, SlidersHorizontal, X }
 import { Link } from "react-router-dom";
 import { api, Card, mediaUrl, Meta } from "../api";
 import BusinessCard, { Business } from "../components/BusinessCard";
+import CampusAdCarousel from "../components/CampusAdCarousel";
 import ProductCard from "../components/ProductCard";
 import ProductQuickView from "../components/ProductQuickView";
 
@@ -241,6 +242,8 @@ export default function Browse() {
           </>}
         </div>
       </section>
+
+      <CampusAdCarousel />
 
       <section>
         <SectionHeading title="Popular businesses" />

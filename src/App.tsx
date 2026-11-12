@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { Building2, Compass, LogIn, MessageCircle, PackageCheck, Settings as SettingsIcon, Truck } from "lucide-react";
+import { Building2, Compass, LogIn, Megaphone, MessageCircle, PackageCheck, Settings as SettingsIcon, Truck } from "lucide-react";
 import { useAuth } from "./auth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Verify from "./pages/Verify";
 import Appeals from "./pages/Appeals";
 import AdminAppeals from "./pages/AdminAppeals";
+import AdminAds from "./pages/AdminAds";
 import Inbox from "./pages/Inbox";
 import Chat from "./pages/Chat";
 import ReviewOrder from "./pages/ReviewOrder";
@@ -106,6 +107,7 @@ function PublicLayout() {
             <Link to={me ? "/courier" : "/login"} state={!me ? { from: "/courier" } : undefined} aria-label="Courier" title="Courier" className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 transition hover:text-brand ${location.pathname === "/courier" ? "text-brand" : "text-ink/70"}`}><Truck size={17} /></Link>
             <ThemeToggle />
             {me?.is_admin && <Link to="/admin/appeals" className="hidden rounded-full px-3 py-2 text-xs font-semibold text-ink/60 transition hover:bg-white md:block">Admin</Link>}
+            {me?.is_admin && <Link to="/admin/ads" aria-label="Manage campus flyers" title="Flyers" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-ink/70 transition hover:-translate-y-0.5 hover:text-brand"><Megaphone size={16} /></Link>}
             {appealOnly && <Link to="/appeals" className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold">Account appeal</Link>}
             {loading ? <span className="h-8 w-16 animate-pulse rounded-full bg-line/60" /> : !me && !appealOnly
               ? <div className="flex items-center gap-2"><Link to="/login" className="rounded-full px-2 py-2 text-xs font-semibold text-ink/70 hover:text-ink sm:px-3">Sign in</Link><Link to="/register" className="rounded-full bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand/90 sm:px-4">Join campus</Link></div>
@@ -168,6 +170,7 @@ export default function App() {
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/chat/:productId/:counterpartId" element={<Chat />} />
           <Route path="/admin/appeals" element={<AdminAppeals />} />
+          <Route path="/admin/ads" element={<AdminAds />} />
           <Route path="/sell" element={<Sell />} />
           <Route path="/store/edit" element={<EditStore />} />
           <Route path="/orders" element={<Orders />} />

@@ -1,16 +1,35 @@
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
+function authHeaders(token: string | null): Record<string, string> {
+  return token ? { Authorization: ["Bearer", token].join(" ") } : {};
+}
+
+async function responseError(res: Response): Promise<Error> {
+  const error = await res.json().catch(() => ({}));
+  return new Error(typeof error.detail === "string" ? error.detail : "Something went wrong. Try again.");
+}
+
 export async function api<T>(path: string, opts: { method?: string; body?: unknown } = {}): Promise<T> {
   const token = localStorage.getItem("token");
   const res = await fetch(BASE + path, {
     method: opts.method ?? "GET",
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(typeof e.detail === "string" ? e.detail : "Something went wrong. Try again.");
-  }
+  if (!res.ok) throw await responseError(res);
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
+export async function apiForm<T>(path: string, form: FormData, method = "POST"): Promise<T> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(BASE + path, {
+    method,
+    headers: authHeaders(token),
+    body: form,
+  });
+  if (!res.ok) throw await responseError(res);
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
@@ -22,10 +41,15 @@ export const mediaUrl = (u?: string | null) => (u ? (u.startsWith("http") ? u : 
 export async function upload(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(BASE + "/uploads", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, body: fd });
-  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(typeof e.detail === "string" ? e.detail : "Upload failed."); }
+  const res = await fetch(BASE + "/uploads", {
+    method: "POST",
+    headers: authHeaders(localStorage.getItem("token")),
+    body: fd,
+  });
+  if (!res.ok) throw await responseError(res);
   return (await res.json()).url;
 }
+
 export interface Seller { id: string; name: string; user_type: string }
 export interface Card { id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
 export interface Meta { categories: string[]; conditions: string[]; locations: string[]; fees: Record<string, { listing: number; promotion: number }>; delivery_fee: number }
