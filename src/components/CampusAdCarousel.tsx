@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { api, mediaUrl } from "../api";
 
 interface CampusAd {
@@ -15,6 +14,8 @@ export default function CampusAdCarousel() {
   const [active, setActive] = useState(0);
   const [error, setError] = useState("");
   const [now, setNow] = useState(Date.now());
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const suppressClick = useRef(false);
 
   useEffect(() => {
     const loadAds = () => {
@@ -53,13 +54,43 @@ export default function CampusAdCarousel() {
     <section aria-label="Ads" className="animate-rise">
       <div className="mb-3 flex items-end justify-between gap-3">
         <h2 className="font-display text-2xl font-bold tracking-[-.03em] sm:text-[1.7rem]">Ads</h2>
-        {activeAds.length > 1 && <div className="flex items-center gap-1.5">
-          <button type="button" aria-label="Previous flyer" onClick={() => show(currentIndex - 1)} className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white transition hover:-translate-x-0.5 hover:bg-paper"><ArrowLeft size={16} /></button>
-          <span className="min-w-10 text-center text-xs font-semibold tabular-nums text-ink/55">{currentIndex + 1} / {activeAds.length}</span>
-          <button type="button" aria-label="Next flyer" onClick={() => show(currentIndex + 1)} className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white transition hover:translate-x-0.5 hover:bg-paper"><ArrowRight size={16} /></button>
-        </div>}
       </div>
-      <div className="group relative aspect-square overflow-hidden sm:aspect-[1.4/1] lg:aspect-[1.8/1]">
+      <div
+        className="group relative aspect-square touch-pan-y overflow-hidden sm:aspect-[1.4/1] lg:aspect-[1.8/1]"
+        onTouchStart={(event) => setTouchStart(event.touches[0]?.clientX ?? null)}
+        onTouchEnd={(event) => {
+          if (touchStart === null) return;
+          const delta = event.changedTouches[0].clientX - touchStart;
+          if (Math.abs(delta) > 40) {
+            show(currentIndex + (delta < 0 ? 1 : -1));
+            suppressClick.current = true;
+            window.setTimeout(() => { suppressClick.current = false; }, 0);
+          }
+          setTouchStart(null);
+        }}
+        onPointerDown={(event) => {
+          if (event.pointerType === "mouse") {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            setTouchStart(event.clientX);
+          }
+        }}
+        onPointerUp={(event) => {
+          if (event.pointerType !== "mouse" || touchStart === null) return;
+          const delta = event.clientX - touchStart;
+          if (Math.abs(delta) > 40) {
+            show(currentIndex + (delta < 0 ? 1 : -1));
+            suppressClick.current = true;
+            window.setTimeout(() => { suppressClick.current = false; }, 0);
+          }
+          setTouchStart(null);
+        }}
+        onPointerCancel={() => setTouchStart(null)}
+        onClickCapture={(event) => {
+          if (!suppressClick.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      >
         <div key={ad.id} className="ad-slide absolute inset-0">
           {ad.link_url
             ? <a href={ad.link_url} target="_blank" rel="noopener noreferrer" aria-label={ad.alt_text} className="block h-full w-full"><img src={mediaUrl(ad.image_url)} alt={ad.alt_text} className="h-full w-full object-contain" /></a>

@@ -12,6 +12,7 @@ export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [storeName, setStoreName] = useState("");
   const [message, setMessage] = useState("");
   const [err, setErr] = useState("");
@@ -21,6 +22,20 @@ export default function Register() {
     e.preventDefault();
     setErr("");
     setMessage("");
+    const strongPassword = password.length >= 12
+      && new TextEncoder().encode(password).length <= 72
+      && /[a-z]/.test(password)
+      && /[A-Z]/.test(password)
+      && /\d/.test(password)
+      && /[^A-Za-z0-9]/.test(password);
+    if (!strongPassword) {
+      setErr("Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErr("Passwords do not match.");
+      return;
+    }
     const normalizedEmail = email.trim().toLowerCase();
     const studentEmail = STUDENT_DOMAINS.some((domain) => normalizedEmail.endsWith(domain));
     if (accountType === "student" && !studentEmail) {
@@ -36,7 +51,7 @@ export default function Register() {
     try {
       await api("/auth/register", {
         method: "POST",
-        body: { full_name: fullName.trim(), email: normalizedEmail, password, account_type: accountType, store_name: storeName.trim() || null },
+        body: { full_name: fullName.trim(), email: normalizedEmail, password, confirm_password: confirmPassword, account_type: accountType, store_name: storeName.trim() || null },
       });
       toast("Account created", accountType === "student" ? "Check your student email for the verification code." : "Check your email for the verification link.");
       if (accountType === "student") {
@@ -68,7 +83,12 @@ export default function Register() {
         {accountType === "student"
           ? <p className="text-xs text-ink/60">Use your @st.knust.edu.gh or @idl.knust.edu.gh address. We’ll email a 6-digit code.</p>
           : <input className="input" placeholder="Store name (optional)" value={storeName} onChange={(e) => setStoreName(e.target.value)} maxLength={80} />}
-        <input className="input" type="password" autoComplete="new-password" placeholder="Password (at least 8 characters)" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} required />
+        <label className="block space-y-1">
+          <span className="sr-only">Password</span>
+          <input className="input" type="password" autoComplete="new-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={12} maxLength={72} required />
+          <span className="block text-xs text-ink/60">At least 12 characters with uppercase and lowercase letters, a number, and a symbol.</span>
+        </label>
+        <input className="input" type="password" autoComplete="new-password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} minLength={12} maxLength={72} required />
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
         {message && <p role="status" className="text-sm text-brand">{message}</p>}
         <button className="btn-primary w-full" disabled={busy}>{busy ? "Creating account…" : "Create account"}</button>
