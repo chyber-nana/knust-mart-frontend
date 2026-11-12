@@ -120,7 +120,7 @@ export default function Browse() {
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
           <div className="absolute -right-10 -top-20 h-56 w-56 rounded-full border-[34px] border-white/40 sm:h-72 sm:w-72" />
         </div>
-        <div className="relative z-10 max-w-2xl">
+        <div className={`relative z-10 max-w-2xl ${filterOpen || (searchFocused && filters.q.trim()) ? "z-40" : ""}`}>
           <h1 className="max-w-xl font-display text-2xl font-bold leading-[1.06] tracking-[-.045em] sm:text-4xl">Marketplace</h1>
           <div className="relative mt-4" ref={searchRef}>
             <div className="flex items-center gap-2 rounded-2xl border border-white/90 bg-white p-2 shadow-sm focus-within:ring-2 focus-within:ring-brand/50">

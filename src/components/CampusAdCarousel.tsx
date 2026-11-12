@@ -59,7 +59,7 @@ export default function CampusAdCarousel() {
           <button type="button" aria-label="Next flyer" onClick={() => show(currentIndex + 1)} className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white transition hover:translate-x-0.5 hover:bg-paper"><ArrowRight size={16} /></button>
         </div>}
       </div>
-      <div className="group relative aspect-[2.2/1] overflow-hidden sm:aspect-[3.4/1]">
+      <div className="group relative aspect-square overflow-hidden sm:aspect-[1.4/1] lg:aspect-[1.8/1]">
         <div key={ad.id} className="ad-slide absolute inset-0">
           {ad.link_url
             ? <a href={ad.link_url} target="_blank" rel="noopener noreferrer" aria-label={ad.alt_text} className="block h-full w-full"><img src={mediaUrl(ad.image_url)} alt={ad.alt_text} className="h-full w-full object-contain" /></a>
