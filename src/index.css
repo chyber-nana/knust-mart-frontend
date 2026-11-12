@@ -38,6 +38,18 @@ body::before {
   background-size: 15px 15px;
   pointer-events: none;
 }
+.auth-page {
+  background:
+    radial-gradient(ellipse at 8% 8%, rgb(233 186 79 / .18), transparent 25rem),
+    radial-gradient(ellipse at 94% 88%, rgb(101 191 136 / .16), transparent 28rem);
+}
+.auth-art {
+  isolation: isolate;
+  background: linear-gradient(145deg, #267347, #1f5d3a 52%, #16452d);
+  box-shadow: 0 24px 60px rgb(31 93 58 / .2);
+}
+.auth-art-tile { box-shadow: 0 12px 30px rgb(0 0 0 / .1); }
+.dark .auth-art { background: linear-gradient(145deg, #245d3c, #19482f 52%, #123923); }
 html { scroll-behavior: smooth; }
 ::selection { @apply bg-brand/15 text-ink; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
