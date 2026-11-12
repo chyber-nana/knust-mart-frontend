@@ -203,6 +203,8 @@ export default function Browse() {
         </div>
       </section>
 
+      <CampusAdCarousel />
+
       <section className="animate-rise">
         <div className="mb-3 flex items-end justify-between">
           <SectionHeading title="Categories" />
@@ -242,8 +244,6 @@ export default function Browse() {
           </>}
         </div>
       </section>
-
-      <CampusAdCarousel />
 
       <section>
         <SectionHeading title="Popular businesses" />

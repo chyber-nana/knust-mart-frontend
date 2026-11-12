@@ -9,7 +9,9 @@ interface CampusAd {
   image_url: string;
   alt_text: string;
   link_url: string | null;
+  duration: "day" | "week" | "month";
   created_at: string;
+  expires_at: string;
 }
 
 export default function AdminAds() {
@@ -18,6 +20,7 @@ export default function AdminAds() {
   const [file, setFile] = useState<File | null>(null);
   const [altText, setAltText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
+  const [duration, setDuration] = useState<CampusAd["duration"]>("day");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,11 +53,13 @@ export default function AdminAds() {
       const form = new FormData();
       form.append("file", file);
       form.append("alt_text", altText.trim());
+      form.append("duration", duration);
       if (linkUrl.trim()) form.append("link_url", linkUrl.trim());
       await apiForm<CampusAd>("/ads/admin", form);
       setFile(null);
       setAltText("");
       setLinkUrl("");
+      setDuration("day");
       const picker = document.getElementById("flyer-file") as HTMLInputElement | null;
       if (picker) picker.value = "";
       await load();
@@ -100,6 +105,14 @@ export default function AdminAds() {
           <input className="input" value={altText} onChange={(event) => setAltText(event.target.value)} maxLength={160} placeholder="Describe the flyer" required />
         </label>
         <label className="block space-y-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wide text-ink/55">Ad duration</span>
+          <select className="input" value={duration} onChange={(event) => setDuration(event.target.value as CampusAd["duration"])}>
+            <option value="day">1 day</option>
+            <option value="week">1 week</option>
+            <option value="month">1 month</option>
+          </select>
+        </label>
+        <label className="block space-y-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-ink/55">Link (optional)</span>
           <input className="input" type="url" value={linkUrl} onChange={(event) => setLinkUrl(event.target.value)} maxLength={2048} placeholder="https://" />
         </label>
@@ -114,6 +127,7 @@ export default function AdminAds() {
             <img src={mediaUrl(ad.image_url)} alt={ad.alt_text} className="h-16 w-24 shrink-0 rounded-lg bg-paper object-contain sm:h-20 sm:w-32" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{ad.alt_text}</p>
+              <p className="mt-1 text-xs text-ink/55">{ad.duration} · expires {new Date(ad.expires_at).toLocaleDateString()}</p>
               {ad.link_url && <a href={ad.link_url} target="_blank" rel="noopener noreferrer" className="mt-1 block truncate text-xs text-brand underline">{ad.link_url}</a>}
             </div>
             <button type="button" aria-label="Remove flyer" onClick={() => void removeFlyer(ad)} disabled={busy} className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-red-700 transition hover:bg-red-50">
