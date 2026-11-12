@@ -87,17 +87,17 @@ function PublicLayout() {
       mutationObserver.disconnect();
     };
   }, [location.pathname]);
-  const navClass = (path: string) => `flex min-w-0 flex-col items-center gap-1 px-2 py-1 text-[10px] font-semibold transition ${location.pathname === path || (path === "/" && location.pathname.startsWith("/products")) ? "text-brand" : "text-ink/45 hover:text-ink"}`;
+  const navClass = (path: string) => `flex min-w-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[10px] font-semibold transition duration-200 hover:-translate-y-0.5 ${location.pathname === path || (path === "/" && location.pathname.startsWith("/products")) ? "bg-brand/10 text-brand" : "text-ink/45 hover:bg-white/70 hover:text-ink"}`;
   return (
     <div className="min-h-screen pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <div aria-hidden="true" className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-[#1f5d3a] via-[#65bf88] to-[#e9ba4f] transition-transform duration-100" style={{ transform: `scaleX(${scrollProgress})` }} />
-      <header className="sticky top-0 z-40 bg-transparent">
-        <div className="flex h-14 w-full items-center gap-4 px-4 sm:h-16 sm:px-8 lg:px-12">
-          <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-brand sm:text-xl">
+      <header className="site-header sticky top-0 z-40">
+        <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-4 px-4 sm:h-16 sm:px-8 lg:px-12">
+          <Link to="/" className="group flex items-center gap-2 font-display text-lg font-bold tracking-tight text-brand sm:text-xl">
             <img
               src="https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg"
               alt=""
-              className="h-9 w-9 shrink-0 rounded-[28%] object-contain"
+              className="h-9 w-9 shrink-0 rounded-[28%] object-contain transition duration-300 group-hover:rotate-[-7deg] group-hover:scale-110"
             />
             <span>KNUST <span className="text-ink">Mart</span></span>
           </Link>
@@ -113,9 +113,9 @@ function PublicLayout() {
           </div>
         </div>
       </header>
-      <main className="w-full px-4 py-5 sm:px-8 sm:py-7 lg:px-12"><Outlet /></main>
+      <main className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7 lg:px-12"><Outlet /></main>
       {me && <OrderAlerts />}
-      <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-8px_24px_rgba(28,27,23,.06)] backdrop-blur md:static md:mx-auto md:mt-4 md:flex md:w-full md:justify-center md:gap-10 md:border-0 md:bg-transparent md:px-12 md:pb-4 md:pt-0 md:shadow-none">
+      <nav aria-label="Main navigation" className="site-nav fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-8px_24px_rgba(28,27,23,.06)] backdrop-blur md:static md:mx-auto md:mt-4 md:flex md:w-full md:max-w-[1600px] md:justify-center md:gap-10 md:border-0 md:bg-transparent md:px-12 md:pb-4 md:pt-0 md:shadow-none">
         <div className="mx-auto flex max-w-md items-center justify-around md:max-w-none md:justify-center md:gap-10">
           <Link to="/" className={navClass("/")}><Compass size={19} /><span>Explore</span></Link>
           {me ? <>
