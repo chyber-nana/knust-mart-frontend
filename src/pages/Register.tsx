@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, GraduationCap, Store } from "lucide-react";
+import { Check, Eye, EyeOff, Frown, GraduationCap, Smile, Store } from "lucide-react";
 import { api } from "../api";
 import AuthLayout from "../components/AuthLayout";
 import { useToast } from "../components/Toast";
@@ -21,17 +21,21 @@ export default function Register() {
   const [message, setMessage] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const passwordBytes = new TextEncoder().encode(password).length;
+  const passwordChecks = [
+    { label: "At least 8 characters", passed: password.length >= 8 },
+    { label: "No more than 72 bytes", passed: passwordBytes <= 72 },
+    { label: "A lowercase letter", passed: /[a-z]/.test(password) },
+    { label: "An uppercase letter", passed: /[A-Z]/.test(password) },
+    { label: "A number", passed: /\d/.test(password) },
+    { label: "A symbol", passed: /[^A-Za-z0-9]/.test(password) },
+  ];
+  const strongPassword = passwordChecks.every((check) => check.passed);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr("");
     setMessage("");
-    const strongPassword = password.length >= 8
-      && new TextEncoder().encode(password).length <= 72
-      && /[a-z]/.test(password)
-      && /[A-Z]/.test(password)
-      && /\d/.test(password)
-      && /[^A-Za-z0-9]/.test(password);
     if (!strongPassword) {
       setErr("Use at least 8 characters with uppercase and lowercase letters, a number, and a symbol.");
       return;
@@ -112,7 +116,25 @@ export default function Register() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </span>
-          <span className="block text-xs leading-5 text-ink/60">At least 8 characters with uppercase and lowercase letters, a number, and a symbol.</span>
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label={strongPassword ? "Password is strong" : "Password does not meet all requirements"}
+            className={`rounded-xl border p-3 transition-colors ${strongPassword ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}
+          >
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              {strongPassword ? <Smile size={19} aria-hidden="true" /> : <Frown size={19} aria-hidden="true" />}
+              <span>{strongPassword ? "Strong password!" : "Password needs a little work"}</span>
+            </div>
+            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+              {passwordChecks.map(({ label, passed }) => (
+                <li key={label} className={`flex items-center gap-1.5 ${passed ? "text-green-700" : "text-red-700"}`}>
+                  <Check size={13} aria-hidden="true" className={passed ? "opacity-100" : "opacity-30"} />
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </label>
 
         <label className="block space-y-1.5">
