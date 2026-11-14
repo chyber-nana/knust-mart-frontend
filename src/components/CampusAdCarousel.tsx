@@ -68,7 +68,7 @@ export default function CampusAdCarousel() {
         {count > 1 && <span className="text-xs font-semibold text-ink/50" aria-live="polite">{currentIndex + 1} / {count}<span className="ml-2 hidden text-ink/40 min-[420px]:inline">· swipe for more</span></span>}
       </div>
       <div
-        className="group relative aspect-video max-h-[22rem] touch-pan-y overflow-hidden rounded-[1.25rem] border border-line bg-[var(--surface-soft)]"
+        className="group relative aspect-square max-h-none touch-pan-y overflow-hidden rounded-[1.25rem] border border-line bg-[var(--surface-soft)] sm:aspect-video sm:max-h-[22rem]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
