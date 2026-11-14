@@ -45,8 +45,10 @@ export default function Vendor() {
         <div className="flex w-full gap-2 pb-1 sm:w-auto">
           <button className="btn-ghost flex-1 sm:flex-none" onClick={share}>{copied ? "Link copied" : "Share link"}</button>
           {me?.id === v.id && <>
-            <Link to="/sell" className="btn-primary flex-1 sm:flex-none"><Plus size={16} />Add product</Link>
-            <Link to="/store/edit" className="btn-ghost flex-1 sm:flex-none">Edit store</Link>
+            {(me.store_active || me.user_type !== "external") && <Link to="/sell" className="btn-primary flex-1 sm:flex-none"><Plus size={16} />Add product</Link>}
+            {me.store_active
+              ? <Link to="/store/edit" className="btn-ghost flex-1 sm:flex-none">Edit store</Link>
+              : <Link to="/store/create" className={`${me.user_type === "external" ? "btn-primary" : "btn-ghost"} flex-1 sm:flex-none`}>Create business</Link>}
           </>}
         </div>
       </div>

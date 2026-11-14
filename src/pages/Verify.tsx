@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth";
+import OutlookNotice from "../components/OutlookNotice";
 import { useToast } from "../components/Toast";
 
 export default function Verify() {
@@ -86,6 +87,7 @@ export default function Verify() {
     <div className="mx-auto mt-16 max-w-sm px-4">
       <h1 className="font-display text-2xl font-bold text-brand">Verify your student email</h1>
       <p className="mb-5 text-sm text-ink/70">Enter the 6-digit code we sent to your KNUST email. It expires in 10 minutes.</p>
+      <div className="mb-4"><OutlookNotice showButton /></div>
       <form onSubmit={verify} className="card space-y-3 p-5">
         <input className="input" type="email" autoComplete="email" placeholder="KNUST email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input className="input text-center text-lg tracking-[0.4em]" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} required />

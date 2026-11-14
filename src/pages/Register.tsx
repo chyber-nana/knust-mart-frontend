@@ -1,8 +1,10 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Check, Eye, EyeOff, Frown, GraduationCap, Smile, Store } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { api } from "../api";
 import AuthLayout from "../components/AuthLayout";
+import OutlookNotice from "../components/OutlookNotice";
+import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import { useToast } from "../components/Toast";
 
 const STUDENT_DOMAINS = ["@st.knust.edu.gh", "@idl.knust.edu.gh"];
@@ -10,33 +12,23 @@ const STUDENT_DOMAINS = ["@st.knust.edu.gh", "@idl.knust.edu.gh"];
 export default function Register() {
   const nav = useNavigate();
   const toast = useToast();
-  const [accountType, setAccountType] = useState<"student" | "external">("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [storeName, setStoreName] = useState("");
   const [message, setMessage] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const passwordBytes = new TextEncoder().encode(password).length;
-  const passwordChecks = [
-    { label: "At least 8 characters", passed: password.length >= 8 },
-    { label: "No more than 72 bytes", passed: passwordBytes <= 72 },
-    { label: "A lowercase letter", passed: /[a-z]/.test(password) },
-    { label: "An uppercase letter", passed: /[A-Z]/.test(password) },
-    { label: "A number", passed: /\d/.test(password) },
-    { label: "A symbol", passed: /[^A-Za-z0-9]/.test(password) },
-  ];
-  const strongPassword = passwordChecks.every((check) => check.passed);
+  const normalizedEmail = email.trim().toLowerCase();
+  const studentEmail = STUDENT_DOMAINS.some((domain) => normalizedEmail.endsWith(domain));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr("");
     setMessage("");
-    if (!strongPassword) {
+    if (!isStrongPassword(password)) {
       setErr("Use at least 8 characters with uppercase and lowercase letters, a number, and a symbol.");
       return;
     }
@@ -44,25 +36,15 @@ export default function Register() {
       setErr("Passwords do not match.");
       return;
     }
-    const normalizedEmail = email.trim().toLowerCase();
-    const studentEmail = STUDENT_DOMAINS.some((domain) => normalizedEmail.endsWith(domain));
-    if (accountType === "student" && !studentEmail) {
-      setErr("Student accounts need an @st.knust.edu.gh or @idl.knust.edu.gh email.");
-      return;
-    }
-    if (accountType === "external" && studentEmail) {
-      setErr("Choose Student account for a KNUST student email.");
-      return;
-    }
-
     setBusy(true);
     try {
+      // The server decides student vs. visitor from the email domain. Businesses are created later.
       await api("/auth/register", {
         method: "POST",
-        body: { full_name: fullName.trim(), email: normalizedEmail, password, confirm_password: confirmPassword, account_type: accountType, store_name: storeName.trim() || null },
+        body: { full_name: fullName.trim(), email: normalizedEmail, password, confirm_password: confirmPassword },
       });
-      toast("Account created", accountType === "student" ? "Check your student email for the verification code." : "Check your email for the verification link.");
-      if (accountType === "student") {
+      toast("Account created", studentEmail ? "Check your student email for the verification code." : "Check your email for the verification link.");
+      if (studentEmail) {
         nav(`/verify?email=${encodeURIComponent(normalizedEmail)}`);
       } else {
         setMessage("Check your email for a verification link. It will sign you in when you confirm your address.");
@@ -78,35 +60,21 @@ export default function Register() {
     <AuthLayout>
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold tracking-tight">Create your account</h1>
-        <p className="mt-2 text-sm text-ink/65">Join the KNUST student marketplace.</p>
+        <p className="mt-2 text-sm text-ink/65">Just an email and a password. Want to sell? You can open your business after you sign in.</p>
       </div>
       <form onSubmit={submit} className="card space-y-4 rounded-[1.6rem] border border-line/80 bg-[var(--surface)] p-5 shadow-[0_16px_45px_rgb(48_43_31/.08)] sm:p-7">
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-paper p-1.5" role="group" aria-label="Account type">
-          <button type="button" onClick={() => setAccountType("student")} aria-pressed={accountType === "student"} className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold transition ${accountType === "student" ? "bg-brand text-white shadow-md shadow-brand/20" : "text-ink/65 hover:bg-white/70 hover:text-brand"}`}>
-            <GraduationCap size={18} aria-hidden="true" /> KNUST student
-          </button>
-          <button type="button" onClick={() => setAccountType("external")} aria-pressed={accountType === "external"} className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold transition ${accountType === "external" ? "bg-brand text-white shadow-md shadow-brand/20" : "text-ink/65 hover:bg-white/70 hover:text-brand"}`}>
-            <Store size={17} aria-hidden="true" /> External vendor
-          </button>
-        </div>
-
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Full name</span>
           <input className="input" autoComplete="name" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} minLength={2} maxLength={120} required />
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-sm font-semibold">{accountType === "student" ? "KNUST email address" : "Business email address"}</span>
-          <input className="input" type="email" autoComplete="email" placeholder={accountType === "student" ? "you@st.knust.edu.gh" : "you@example.com"} value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <span className="text-sm font-semibold">Email address</span>
+          <input className="input" type="email" autoComplete="email" placeholder="you@st.knust.edu.gh" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
-        {accountType === "student"
-          ? <p className="rounded-xl bg-brand/5 px-3.5 py-3 text-xs leading-5 text-ink/65">Use your @st.knust.edu.gh or @idl.knust.edu.gh address. We’ll email a 6-digit code.</p>
-          : <label className="block space-y-1.5">
-            <span className="text-sm font-semibold">Store name (optional)</span>
-            <span className="relative block"><Store size={17} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/40" />
-              <input className="input pl-11" placeholder="Store name (optional)" value={storeName} onChange={(e) => setStoreName(e.target.value)} maxLength={80} />
-            </span>
-          </label>}
+        {studentEmail
+          ? <OutlookNotice />
+          : <p className="rounded-xl bg-brand/5 px-3.5 py-3 text-xs leading-5 text-ink/65">KNUST students: use your @st.knust.edu.gh or @idl.knust.edu.gh email. Everyone else can use any email and we’ll send a verification link.</p>}
 
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Password</span>
@@ -116,26 +84,8 @@ export default function Register() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </span>
-          <div
-            role="status"
-            aria-live="polite"
-            aria-label={strongPassword ? "Password is strong" : "Password does not meet all requirements"}
-            className={`rounded-xl border p-3 transition-colors ${strongPassword ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}
-          >
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              {strongPassword ? <Smile size={19} aria-hidden="true" /> : <Frown size={19} aria-hidden="true" />}
-              <span>{strongPassword ? "Strong password!" : "Password needs a little work"}</span>
-            </div>
-            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-              {passwordChecks.map(({ label, passed }) => (
-                <li key={label} className={`flex items-center gap-1.5 ${passed ? "text-green-700" : "text-red-700"}`}>
-                  <Check size={13} aria-hidden="true" className={passed ? "opacity-100" : "opacity-30"} />
-                  <span>{label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </label>
+        <PasswordChecklist password={password} />
 
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Confirm password</span>

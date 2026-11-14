@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+export const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 function authHeaders(token: string | null): Record<string, string> {
   return token ? { Authorization: ["Bearer", token].join(" ") } : {};
@@ -6,7 +6,7 @@ function authHeaders(token: string | null): Record<string, string> {
 
 async function responseError(res: Response): Promise<Error> {
   const error = await res.json().catch(() => ({}));
-  return new Error(typeof error.detail === "string" ? error.detail : "Something went wrong. Try again.");
+  return Object.assign(new Error(typeof error.detail === "string" ? error.detail : "Something went wrong. Try again."), { status: res.status });
 }
 
 export async function api<T>(path: string, opts: { method?: string; body?: unknown } = {}): Promise<T> {

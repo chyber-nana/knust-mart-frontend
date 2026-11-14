@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ImagePlus, X } from "lucide-react";
 import { api, Meta, mediaUrl, upload } from "../api";
 import { useAuth } from "../auth";
@@ -50,6 +50,7 @@ export default function Sell() {
     catch (x) { setErr((x as Error).message); setBusy(false); }
   };
   const fee = meta && me ? meta.fees[me.user_type] : null;
+  if (me && me.user_type === "external" && !me.store_active) return <BusinessRequired />;
   return (
     <div className="mx-auto max-w-xl">
       <div className="mb-5 flex items-start justify-between gap-3"><h1 className="font-display text-2xl font-bold sm:text-3xl">Create a listing</h1><div className="grid h-11 w-11 shrink-0 place-items-center rounded-[30%] bg-[#e6ebdf] font-display text-xl font-bold text-brand">{step + 1}</div></div>
@@ -131,11 +132,19 @@ export default function Sell() {
   );
 }
 
+function BusinessRequired() {
+  return <div className="card mx-auto max-w-xl rounded-2xl p-6 text-center">
+    <h1 className="font-display text-2xl font-bold">Create your business first</h1>
+    <p className="mt-2 text-sm text-ink/70">Vendors sell through a business storefront. It only takes a minute to set up.</p>
+    <Link to="/store/create" className="btn-primary mt-5 inline-flex">Create my business</Link>
+  </div>;
+}
+
 function FeePanel({ fee, userType }: { fee: { listing: number; promotion: number }; userType?: string }) {
   return <div className="rounded-xl border border-line bg-paper p-4 text-sm">
     <p className="mb-1 font-semibold">{userType === "student" ? "Student seller rates" : "External vendor rates"}</p>
     <p>Listing: {fee.listing === 0 ? "Free" : `GH₵${fee.listing} per listing`}</p>
     <p>Promotion: GH₵{fee.promotion}</p>
-    <p className="mt-1 text-xs text-ink/60">Billing isn't connected. Nothing is charged here.</p>
+    <p className="mt-1 text-xs text-ink/60">Promotion billing isn't connected yet. Nothing is charged here.</p>
   </div>;
 }

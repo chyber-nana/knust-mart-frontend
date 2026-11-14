@@ -35,7 +35,7 @@ export default function Login() {
           <span className="text-sm font-semibold">Email address</span>
           <span className="relative block">
             <Mail size={18} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/40" />
-            <input className="input pl-11" type="email" autoComplete="email" placeholder="you@st.knust.edu.gh" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input className="input pl-11" type="email" autoComplete="email" placeholder="Your email address" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </span>
         </label>
         <label className="block space-y-2">
@@ -48,6 +48,7 @@ export default function Login() {
             </button>
           </span>
         </label>
+        <div className="-mt-2 text-right"><Link to="/forgot-password" className="text-xs font-semibold text-brand hover:underline">Forgot password?</Link></div>
         {err && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{err}</p>}
         <button className="btn-primary w-full rounded-xl py-3.5 shadow-lg shadow-brand/15" disabled={busy}>{busy ? "Signing in…" : "Sign in"} <span aria-hidden>→</span></button>
       </form>

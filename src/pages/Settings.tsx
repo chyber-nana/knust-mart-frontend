@@ -60,9 +60,9 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">My storefront</span><span className="text-xs text-ink/60">View your public store</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
-        <Link to="/store/edit" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+        <Link to={me?.store_active ? "/store/edit" : "/store/create"} className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Building2 size={19} className="text-brand" />
-          <span className="flex-1"><span className="block text-sm font-semibold">Edit storefront</span><span className="text-xs text-ink/60">Update your business details and banner</span></span>
+          <span className="flex-1"><span className="block text-sm font-semibold">{me?.store_active ? "Edit storefront" : "Create your business"}</span><span className="text-xs text-ink/60">{me?.store_active ? "Update your business details and banner" : "Open a storefront and sell as a business"}</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
         <Link to="/courier" className="flex items-center gap-3 p-4 transition hover:bg-paper">
@@ -75,7 +75,7 @@ export default function Settings() {
       <form onSubmit={changePassword} className="card space-y-3 p-4 sm:p-5">
         <div className="flex items-center gap-2"><KeyRound size={18} className="text-brand" /><h2 className="font-display text-lg font-bold">Change password</h2></div>
         <label className="block space-y-1 text-sm"><span className="font-medium">Current password</span><input className="input" type="password" autoComplete="current-password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} /></label>
-        <label className="block space-y-1 text-sm"><span className="font-medium">New password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /><span className="block text-xs text-ink/55">At least 8 characters.</span></label>
+        <label className="block space-y-1 text-sm"><span className="font-medium">New password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /><span className="block text-xs text-ink/55">8–72 characters with upper and lowercase letters, a number and a symbol.</span></label>
         <label className="block space-y-1 text-sm"><span className="font-medium">Confirm new password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></label>
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="text-sm text-brand">{message}</p>}

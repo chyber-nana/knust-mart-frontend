@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Building2, Compass, LogIn, Megaphone, MessageCircle, PackageCheck, Settings as SettingsIcon, Truck } from "lucide-react";
 import { useAuth } from "./auth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Verify from "./pages/Verify";
+import ForgotPassword from "./pages/ForgotPassword";
+import CreateBusiness from "./pages/CreateBusiness";
+import StoreActivated from "./pages/StoreActivated";
 import Appeals from "./pages/Appeals";
 import AdminAppeals from "./pages/AdminAppeals";
 import AdminAds from "./pages/AdminAds";
@@ -144,6 +147,12 @@ function RequireAuth() {
   return <Outlet />;
 }
 
+function RequireStore({ children }: { children: ReactNode }) {
+  const { me } = useAuth();
+  if (!me?.store_active) return <Navigate to="/store/create" replace />;
+  return <>{children}</>;
+}
+
 function StandaloneLayout() {
   return (
     <>
@@ -160,6 +169,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify" element={<Verify />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/appeals" element={<Appeals />} />
       </Route>
       <Route element={<PublicLayout />}>
@@ -172,7 +182,9 @@ export default function App() {
           <Route path="/admin/appeals" element={<AdminAppeals />} />
           <Route path="/admin/ads" element={<AdminAds />} />
           <Route path="/sell" element={<Sell />} />
-          <Route path="/store/edit" element={<EditStore />} />
+          <Route path="/store/create" element={<CreateBusiness />} />
+          <Route path="/store/activated" element={<StoreActivated />} />
+          <Route path="/store/edit" element={<RequireStore><EditStore /></RequireStore>} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/orders/:id/review" element={<ReviewOrder />} />
