@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Building2, KeyRound, LogOut, Truck } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
+import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
 
 export default function Settings() {
@@ -18,6 +19,10 @@ export default function Settings() {
     event.preventDefault();
     setMessage("");
     setError("");
+    if (!isStrongPassword(newPassword)) {
+      setError("Your new password does not meet all the requirements yet.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("New passwords do not match.");
       return;
@@ -75,8 +80,9 @@ export default function Settings() {
       <form onSubmit={changePassword} className="card space-y-3 p-4 sm:p-5">
         <div className="flex items-center gap-2"><KeyRound size={18} className="text-brand" /><h2 className="font-display text-lg font-bold">Change password</h2></div>
         <label className="block space-y-1 text-sm"><span className="font-medium">Current password</span><input className="input" type="password" autoComplete="current-password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} /></label>
-        <label className="block space-y-1 text-sm"><span className="font-medium">New password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /><span className="block text-xs text-ink/55">8–72 characters with upper and lowercase letters, a number and a symbol.</span></label>
-        <label className="block space-y-1 text-sm"><span className="font-medium">Confirm new password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></label>
+        <label className="block space-y-1 text-sm"><span className="font-medium">New password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /></label>
+        <PasswordChecklist password={newPassword} />
+        <label className="block space-y-1 text-sm"><span className="font-medium">Confirm new password</span><input className="input" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />{confirmPassword && newPassword !== confirmPassword && <span className="block text-xs text-red-700">Passwords do not match yet.</span>}</label>
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="text-sm text-brand">{message}</p>}
         <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Updating…" : "Update password"}</button>

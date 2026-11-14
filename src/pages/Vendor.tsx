@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MapPin, Plus, Star } from "lucide-react";
+import { MapPin, Pencil, Plus, Share2, Star } from "lucide-react";
 import { api, Card, mediaUrl } from "../api";
 import { useAuth } from "../auth";
 import ProductCard from "../components/ProductCard";
@@ -42,14 +42,11 @@ export default function Vendor() {
       </div>
       <div className="flex flex-wrap items-end gap-3 px-3 sm:px-6">
         <div className="min-w-0 flex-1 pb-1"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1><SellerBadge type={v.user_type} /></div>
-        <div className="flex w-full gap-2 pb-1 sm:w-auto">
-          <button className="btn-ghost flex-1 sm:flex-none" onClick={share}>{copied ? "Link copied" : "Share link"}</button>
-          {me?.id === v.id && <>
-            {(me.store_active || me.user_type !== "external") && <Link to="/sell" className="btn-primary flex-1 sm:flex-none"><Plus size={16} />Add product</Link>}
-            {me.store_active
-              ? <Link to="/store/edit" className="btn-ghost flex-1 sm:flex-none">Edit store</Link>
-              : <Link to="/store/create" className={`${me.user_type === "external" ? "btn-primary" : "btn-ghost"} flex-1 sm:flex-none`}>Create business</Link>}
-          </>}
+        <div className="flex w-full items-center gap-2 pb-1 sm:w-auto">
+          {me?.id === v.id && (me.store_active || me.user_type !== "external") && <Link to="/sell" className="btn-primary min-w-0 flex-1 whitespace-nowrap sm:flex-none"><Plus size={16} />Add product</Link>}
+          {me?.id === v.id && !me.store_active && <Link to="/store/create" className={`${me.user_type === "external" ? "btn-primary" : "btn-ghost"} min-w-0 flex-1 whitespace-nowrap sm:flex-none`}>Create business</Link>}
+          {me?.id === v.id && me.store_active && <Link to="/store/edit" aria-label="Edit store" title="Edit store" className="btn-ghost h-11 w-11 shrink-0 !p-0"><Pencil size={17} /></Link>}
+          <button type="button" aria-label={copied ? "Link copied" : "Share link"} title={copied ? "Link copied" : "Share link"} className={`btn-ghost h-11 shrink-0 ${copied ? "px-3 text-brand" : "w-11 !p-0"}`} onClick={share}>{copied ? <span className="text-xs font-semibold">Copied</span> : <Share2 size={17} />}</button>
         </div>
       </div>
       {shareErr && <p role="alert" className="mt-2 text-sm text-red-700">{shareErr}</p>}

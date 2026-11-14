@@ -22,6 +22,7 @@ export default function Browse() {
   const [filterPopupLayout, setFilterPopupLayout] = useState<{ placement: "above" | "below"; maxHeight: number; rightOffset: number } | null>(null);
   const [err, setErr] = useState("");
   const [vendorErr, setVendorErr] = useState("");
+  const [vendorsLoaded, setVendorsLoaded] = useState(false);
   const [productErr, setProductErr] = useState("");
   const trendingRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -31,8 +32,10 @@ export default function Browse() {
 
   useEffect(() => {
     api<Meta>("/products/meta").then(setMeta).catch((e) => setErr(e.message));
-    api<Business[]>("/vendors?sort=trending").then(setTrending).catch((e) => setVendorErr(e.message));
-    api<Business[]>("/vendors?sort=popular").then(setPopular).catch((e) => setVendorErr(e.message));
+    Promise.all([
+      api<Business[]>("/vendors?sort=trending").then(setTrending),
+      api<Business[]>("/vendors?sort=popular").then(setPopular),
+    ]).catch((e) => setVendorErr(e.message)).finally(() => setVendorsLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -110,6 +113,19 @@ export default function Browse() {
   const activeFilters = useMemo(() => Object.entries(filters)
     .filter(([key, value]) => value && key !== "q" && !(key === "sellers" && value === "all"))
     .map(([key, value]) => ({ key: key as keyof Filters, label: key === "max_price" ? `Under GH₵${value}` : key === "sellers" ? "Student sellers" : value })), [filters]);
+  // Only stores with listings are ranked; the two sections never repeat a store;
+  // stores with nothing listed yet get their own "New storefronts" row.
+  const trendingStores = useMemo(() => trending.filter((b) => b.active_listings > 0), [trending]);
+  const popularStores = useMemo(() => {
+    const seen = new Set(trendingStores.map((b) => b.id));
+    return popular.filter((b) => b.active_listings > 0 && !seen.has(b.id));
+  }, [popular, trendingStores]);
+  const newStores = useMemo(() => {
+    const byId = new Map<string, Business>();
+    [...popular, ...trending].forEach((b) => { if (b.active_listings === 0) byId.set(b.id, b); });
+    return [...byId.values()];
+  }, [popular, trending]);
+  const hasSearch = filters.q.trim() !== "" || filters.category !== "" || activeFilters.length > 0;
   const update = (key: keyof Filters, value: string) => setFilters((current) => ({ ...current, [key]: value } as Filters));
   const change = (key: keyof Filters) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => update(key, event.target.value);
   const moveCarousel = (direction: -1 | 1) => trendingRef.current?.scrollBy({ left: direction * 360, behavior: "smooth" });
@@ -224,35 +240,48 @@ export default function Browse() {
         {(err || productErr) && <p role="alert" className="mb-3 text-sm text-red-700">{productErr || err}</p>}
         {products === null && !productErr ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{[1, 2, 3, 4].map((key) => <div key={key} className="h-64 animate-pulse rounded-[1.25rem] bg-line/50" />)}</div>
           : products?.length === 0 ? <div className="rounded-2xl border border-dashed border-line bg-white/70 px-4 py-10 text-center">
-            <p className="font-display text-lg font-bold">Nothing matches just yet</p>
-            <button className="mt-4 text-sm font-semibold text-brand underline underline-offset-4" onClick={() => setFilters({ q: "", category: "", condition: "", location: "", max_price: "", sellers: "all" })}>Reset search</button>
+            {hasSearch ? <>
+              <p className="font-display text-lg font-bold">Nothing matches just yet</p>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Try a different word or loosen a filter.</p>
+              <button className="mt-4 text-sm font-semibold text-brand underline underline-offset-4" onClick={() => setFilters({ q: "", category: "", condition: "", location: "", max_price: "", sellers: "all" })}>Reset search</button>
+            </> : <>
+              <p className="font-display text-lg font-bold">No listings yet. Be the first to sell!</p>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Books, gadgets, room essentials: whatever you no longer need, someone on campus does.</p>
+              <Link to="/sell" className="btn-primary mt-4 inline-flex">Sell something</Link>
+            </>}
           </div>
           : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">{products?.map((product, index) => <div key={product.id} className="animate-rise" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}><ProductCard p={product} onClick={() => setQuickView(product)} /></div>)}</div>}
       </section>
 
-      <section className="animate-rise">
+      {(trendingStores.length > 0 || !vendorsLoaded) && <section className="animate-rise">
         <SectionHeading title="Trending around KNUST" />
         <div className="group relative">
           <div ref={trendingRef} className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 pt-1">
-            {trending.map((business) => <BusinessCard key={business.id} business={business} featured />)}
-            {trending.length === 0 && !vendorErr && <LoadingBusinessCards />}
-            {trending.length === 0 && vendorErr && <p className="card w-full p-5 text-sm text-red-700">{vendorErr}</p>}
+            {trendingStores.map((business) => <BusinessCard key={business.id} business={business} featured />)}
+            {!vendorsLoaded && <LoadingBusinessCards />}
+            {vendorsLoaded && vendorErr && <p className="card w-full p-5 text-sm text-red-700">{vendorErr}</p>}
           </div>
-          {trending.length > 1 && <>
+          {trendingStores.length > 1 && <>
             <button type="button" aria-label="Previous trending stores" onClick={() => moveCarousel(-1)} className="absolute -left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-line bg-white shadow-sm transition hover:bg-paper group-hover:grid"><ArrowLeft size={17} /></button>
             <button type="button" aria-label="Next trending stores" onClick={() => moveCarousel(1)} className="absolute -right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-line bg-white shadow-sm transition hover:bg-paper group-hover:grid"><ArrowRight size={17} /></button>
           </>}
         </div>
-      </section>
+      </section>}
 
-      <section>
+      {popularStores.length > 0 && <section>
         <SectionHeading title="Popular businesses" />
-        {vendorErr && <p className="mb-3 text-sm text-red-700">{vendorErr}</p>}
-        {popular.length === 0 && !vendorErr
-          ? <LoadingBusinessCards grid />
-          : popular.length === 0 ? <p className="card p-5 text-sm text-ink/60">No storefronts yet.</p>
-          : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{popular.map((business, index) => <div key={business.id} className="animate-rise" style={{ animationDelay: `${index * 55}ms` }}><BusinessCard business={business} /></div>)}</div>}
-      </section>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{popularStores.map((business, index) => <div key={business.id} className="animate-rise" style={{ animationDelay: `${index * 55}ms` }}><BusinessCard business={business} /></div>)}</div>
+      </section>}
+
+      {newStores.length > 0 && <section>
+        <SectionHeading title="New storefronts" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{newStores.map((business, index) => <div key={business.id} className="animate-rise" style={{ animationDelay: `${index * 55}ms` }}><BusinessCard business={business} /></div>)}</div>
+      </section>}
+
+      {vendorsLoaded && !vendorErr && trending.length + popular.length === 0 && <section>
+        <SectionHeading title="Popular businesses" />
+        <p className="card p-5 text-sm text-ink/60">No storefronts yet.</p>
+      </section>}
       {products && products.length > 0 && <div className="flex justify-center pt-2"><button className="btn-ghost rounded-full px-6" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>You’re all caught up <ArrowDown size={14} className="rotate-180" /></button></div>}
       {quickView && <ProductQuickView product={quickView} meta={meta} onClose={closeQuickView} />}
     </div>

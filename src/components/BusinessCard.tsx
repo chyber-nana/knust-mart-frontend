@@ -41,7 +41,9 @@ export default function BusinessCard({ business, featured = false }: { business:
         {business.bio && <p className="mt-1 line-clamp-1 min-h-5 text-xs text-ink/60">{business.bio}</p>}
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-ink/60">
           <span className="flex min-w-0 items-center gap-1"><MapPin size={13} className="shrink-0" /><span className="truncate">{business.address || "KNUST campus"}</span></span>
-          <span className="flex shrink-0 items-center gap-1 text-gold"><Star size={13} fill="currentColor" />{business.rating ? business.rating.toFixed(1) : "New"} <span className="text-ink/45">· {business.active_listings} items</span></span>
+          <span className="flex shrink-0 items-center gap-1.5">{business.rating
+            ? <span className="flex items-center gap-1 text-gold"><Star size={13} fill="currentColor" />{business.rating.toFixed(1)}</span>
+            : <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">New</span>}<span className="text-ink/45">{business.active_listings === 0 ? "No items yet" : `${business.active_listings} ${business.active_listings === 1 ? "item" : "items"}`}</span></span>
         </div>
       </div>
     </Link>

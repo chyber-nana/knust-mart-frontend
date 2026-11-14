@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ImagePlus, X } from "lucide-react";
+import { BadgeCheck, ImagePlus, MapPin, X } from "lucide-react";
 import { api, Meta, mediaUrl, upload } from "../api";
 import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
@@ -87,6 +87,7 @@ export default function Sell() {
         {step === 2 && !isPreview && meta && !isService && (<>
           <select className="input" value={f.hall_location} onChange={set("hall_location")}><option value="">Where is the item?</option>{meta.locations.map((c) => <option key={c}>{c}</option>)}</select>
           {fee && <FeePanel fee={fee} userType={me?.user_type} />}
+          <MeetupTip />
         </>)}
         {isPreview && meta && (<>
           <div>
@@ -141,10 +142,16 @@ function BusinessRequired() {
 }
 
 function FeePanel({ fee, userType }: { fee: { listing: number; promotion: number }; userType?: string }) {
-  return <div className="rounded-xl border border-line bg-paper p-4 text-sm">
-    <p className="mb-1 font-semibold">{userType === "student" ? "Student seller rates" : "External vendor rates"}</p>
-    <p>Listing: {fee.listing === 0 ? "Free" : `GH₵${fee.listing} per listing`}</p>
-    <p>Promotion: GH₵{fee.promotion}</p>
-    <p className="mt-1 text-xs text-ink/60">Promotion billing isn't connected yet. Nothing is charged here.</p>
+  const business = userType !== "student";
+  return <div className="flex items-start gap-3 rounded-xl border border-brand/25 bg-brand/5 p-4 text-sm">
+    <BadgeCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-brand" />
+    <div>
+      <p className="font-semibold">{business ? "Your business is active ✓" : "Selling as a verified student ✓"}</p>
+      <p className="mt-0.5 text-ink/70">{fee.listing === 0 ? "Listing is free." : `Listing costs GH₵${fee.listing}.`} It goes live as soon as you publish.</p>
+    </div>
   </div>;
+}
+
+function MeetupTip() {
+  return <p className="flex items-start gap-2 text-xs leading-5 text-ink/60"><MapPin size={14} aria-hidden="true" className="mt-0.5 shrink-0 text-gold" />Tip: arrange handovers at busy spots like the library or a hall entrance, in daylight.</p>;
 }

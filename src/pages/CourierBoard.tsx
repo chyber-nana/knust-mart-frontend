@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUp, Banknote, History, Truck, X } from "lucide-react";
+import { ArrowUp, Banknote, History, Info, Truck, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { api, Delivery, Job } from "../api";
 import { useAuth } from "../auth";
@@ -79,7 +79,7 @@ export default function CourierBoard() {
         <h1 className="font-display text-2xl font-bold">Courier</h1>
         <p className="text-sm leading-6 text-ink/65">Verified students can accept campus delivery requests and earn the listed courier payout.</p>
         {me.is_verified_student ? <button className="btn-primary w-full" onClick={() => act("/deliveries/couriers/toggle")}>Turn on courier mode</button>
-          : <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">Courier mode is available to verified student accounts.</p>}
+          : <div role="note" className="flex items-start gap-2.5 rounded-xl border border-line bg-paper p-3.5 text-left text-sm text-ink/75"><Info size={17} aria-hidden="true" className="mt-0.5 shrink-0 text-brand" /><p><span className="block font-semibold text-ink">Courier mode is for verified students</span>Sign in with your @st.knust.edu.gh email and verify it to start taking deliveries.</p></div>}
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       </section>
     </div>

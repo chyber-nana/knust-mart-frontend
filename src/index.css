@@ -178,6 +178,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .dark .bg-white { background-color: var(--surface); }
 .dark .bg-white\/95 { background-color: rgb(32 35 31 / .95); }
 .dark .bg-white\/90 { background-color: rgb(32 35 31 / .9); }
+.dark .bg-white\/80 { background-color: rgb(32 35 31 / .8); }
 .dark .bg-white\/70 { background-color: rgb(32 35 31 / .7); }
 .dark .bg-paper { background-color: var(--surface-soft); }
 .dark [class~="bg-[#e8eddf]"],
@@ -279,4 +280,51 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .wake-ring { animation: wake-ring 1.8s ease-out infinite; }
   .wake-tip { animation: wake-fade .5s ease both; }
   .coin-tap:active { animation: coin-pop .18s ease; }
+}
+
+/* =====================================================================
+   Batch C: visual polish
+   ===================================================================== */
+
+/* Keep focused fields and anchors clear of the floating bottom nav */
+@media (max-width: 767px) {
+  html { scroll-padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)); }
+}
+html { scroll-padding-top: 4.5rem; }
+
+/* Header: the logo JPG has a white background, so show it as a deliberate tile in dark mode */
+.dark .brand-logo { background-color: #fffefa; padding: 2px; border-radius: 28%; box-shadow: 0 0 0 1px rgb(255 255 255 / .12); }
+.dark .site-header a[aria-label="Courier"],
+.dark .site-header a[aria-label="Manage campus flyers"] { background-color: var(--surface); color: rgb(var(--color-ink) / .8); }
+
+/* Home hero: decorative rings stay behind the search card, and are calmer in dark mode */
+.market-hero::after { z-index: -1; }
+.dark .market-hero::after { opacity: .35; }
+.dark .market-hero > div:first-child > div { border-color: rgb(255 255 255 / .06); }
+
+/* Skeleton shimmer instead of a flat pulse */
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .animate-pulse {
+    animation: shimmer 1.6s linear infinite;
+    background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .35) 50%, transparent 70%);
+    background-size: 200% 100%;
+  }
+  .dark .animate-pulse { background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .06) 50%, transparent 70%); }
+
+  /* Route change: gentle fade only (no transform, so fixed children keep working) */
+  .page-enter { animation: page-fade .28s ease-out both; }
+
+  /* Flyer carousel progress bar */
+  .ad-progress { transform-origin: left; animation-name: ad-progress; animation-timing-function: linear; animation-fill-mode: both; }
+
+  /* Bottom nav: active tab gets a soft pop */
+  .site-nav a.bg-brand\/10 svg { animation: nav-pop .32s cubic-bezier(.2,.9,.3,1.4) both; }
+}
+@keyframes page-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ad-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes nav-pop { 0% { transform: scale(.8); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .ad-progress { animation: none; }
+  .ad-progress { transform: scaleX(1); }
 }

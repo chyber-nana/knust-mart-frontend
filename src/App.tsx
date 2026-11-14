@@ -93,7 +93,7 @@ function PublicLayout() {
   }, [location.pathname]);
   const navClass = (path: string) => `flex min-w-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[10px] font-semibold transition duration-200 hover:-translate-y-0.5 ${location.pathname === path || (path === "/" && location.pathname.startsWith("/products")) ? "bg-brand/10 text-brand" : "text-ink/45 hover:bg-white/70 hover:text-ink"}`;
   return (
-    <div className="min-h-screen pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+    <div className="min-h-screen pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-0">
       <div aria-hidden="true" className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-[#1f5d3a] via-[#65bf88] to-[#e9ba4f] transition-transform duration-100" style={{ transform: `scaleX(${scrollProgress})` }} />
       <header className="site-header sticky top-0 z-40">
         <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-4 px-4 sm:h-16 sm:px-8 lg:px-12">
@@ -101,9 +101,9 @@ function PublicLayout() {
             <img
               src="https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg"
               alt=""
-              className="h-9 w-9 shrink-0 rounded-[28%] object-contain transition duration-300 group-hover:rotate-[-7deg] group-hover:scale-110"
+              className="brand-logo h-9 w-9 shrink-0 rounded-[28%] object-contain transition duration-300 group-hover:rotate-[-7deg] group-hover:scale-110"
             />
-            <span>KNUST <span className="text-ink">Mart</span></span>
+            <span className={`whitespace-nowrap ${me || loading ? "" : "max-[419px]:hidden"}`}>KNUST <span className="text-ink">Mart</span></span>
           </Link>
           <div className="ml-auto flex items-center gap-2">
             {me && <NotificationCenter />}
@@ -113,12 +113,12 @@ function PublicLayout() {
             {me?.is_admin && <Link to="/admin/ads" aria-label="Manage campus flyers" title="Flyers" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-ink/70 transition hover:-translate-y-0.5 hover:text-brand"><Megaphone size={16} /></Link>}
             {appealOnly && <Link to="/appeals" className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold">Account appeal</Link>}
             {loading ? <span className="h-8 w-16 animate-pulse rounded-full bg-line/60" /> : !me && !appealOnly
-              ? <div className="flex items-center gap-2"><Link to="/login" className="rounded-full px-2 py-2 text-xs font-semibold text-ink/70 hover:text-ink sm:px-3">Sign in</Link><Link to="/register" className="rounded-full bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand/90 sm:px-4">Join campus</Link></div>
+              ? <div className="flex items-center gap-2"><Link to="/login" className="whitespace-nowrap rounded-full px-2 py-2 text-xs font-semibold text-ink/70 hover:text-ink sm:px-3">Sign in</Link><Link to="/register" className="whitespace-nowrap rounded-full bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand/90 sm:px-4">Join campus</Link></div>
               : null}
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7 lg:px-12"><Outlet /></main>
+      <main className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7 lg:px-12"><div key={location.pathname} className="page-enter"><Outlet /></div></main>
       {me && <OrderAlerts />}
       <nav aria-label="Main navigation" className="site-nav fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-8px_24px_rgba(28,27,23,.06)] backdrop-blur md:static md:mx-auto md:mt-4 md:flex md:w-full md:max-w-[1600px] md:justify-center md:gap-10 md:border-0 md:bg-transparent md:px-12 md:pb-4 md:pt-0 md:shadow-none">
         <div className="mx-auto flex max-w-md items-center justify-around md:max-w-none md:justify-center md:gap-10">
