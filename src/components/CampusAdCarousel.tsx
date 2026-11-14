@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { api, mediaUrl } from "../api";
 
 interface CampusAd {
@@ -101,7 +101,12 @@ export default function CampusAdCarousel() {
           {/* Blurred copy fills the sides so tall flyers never leave empty bars */}
           <img src={mediaUrl(ad.image_url)} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-2xl" />
           {ad.link_url
-            ? <a href={ad.link_url} target="_blank" rel="noopener noreferrer" aria-label={ad.alt_text} className="relative block h-full w-full">{image}</a>
+            ? <a href={ad.link_url} target="_blank" rel="noopener noreferrer" aria-label={`${ad.alt_text} (opens link in a new tab)`} className="relative block h-full w-full">
+              {image}
+              <span aria-hidden="true" className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-white/30 bg-black/45 text-white shadow-sm backdrop-blur-md">
+                <ExternalLink size={17} strokeWidth={2.2} />
+              </span>
+            </a>
             : image}
         </div>
         {count > 1 && <>
