@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, KeyRound, LogOut, Truck } from "lucide-react";
+import { Building2, FileText, KeyRound, LogOut, Truck } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
@@ -73,6 +73,11 @@ export default function Settings() {
         <Link to="/courier" className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Truck size={19} className="text-brand" />
           <span className="flex-1"><span className="block text-sm font-semibold">Courier</span><span className="text-xs text-ink/60">{me?.is_courier ? "Manage delivery jobs" : "Join the student courier network"}</span></span>
+          <span aria-hidden="true" className="text-ink/40">›</span>
+        </Link>
+        <Link to="/terms" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+          <FileText size={19} className="text-brand" />
+          <span className="flex-1"><span className="block text-sm font-semibold">Terms and Conditions</span><span className="text-xs text-ink/60">Review the current terms and business rules</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
       </section>

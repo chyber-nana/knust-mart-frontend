@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
-import { api } from "../api";
+import { api, canBuyerCancelDelivery } from "../api";
 import StatusBadge from "../components/StatusBadge";
 import { useToast } from "../components/Toast";
 import ReviewModal from "../components/ReviewModal";
@@ -64,6 +64,23 @@ export default function Receipt() {
     } catch (e) { setErr((e as Error).message); }
     finally { setBusy(false); }
   };
+  const cancelOrder = async () => {
+    const message = r?.fulfillment_type === "courier"
+      ? "Cancel this order? This is only possible before the item is handed to the courier."
+      : "Cancel this pickup order?";
+    if (!r || !confirm(message)) return;
+    setBusy(true);
+    setErr("");
+    try {
+      await api(`/deliveries/${id}/cancel`, { method: "POST" });
+      toast("Order cancelled", "The seller has been notified.");
+      await load();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   if (err) return <p className="text-sm text-red-700">{err}</p>;
   if (!r) return <p className="text-sm">Loading…</p>;
   const done = r.status === "delivered";
@@ -72,7 +89,7 @@ export default function Receipt() {
   const steps = r.fulfillment_type === "pickup"
     ? [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "ready_for_pickup", label: "Ready for pickup" }, { key: "delivered", label: "Picked up" }]
     : [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "pending", label: "Finding courier" }, { key: "accepted", label: "Courier assigned" }, { key: "in_transit", label: "On the way" }, { key: "delivered", label: "Delivered" }];
-  const progressIndex = r.status === "ready_for_pickup" ? 1 : r.status === "accepted" ? 2 : r.status === "in_transit" ? 3 : r.status === "delivered" ? steps.length - 1 : steps.findIndex((step) => step.key === r.status);
+  const progressIndex = r.status === "cancelled" ? -1 : r.status === "ready_for_pickup" ? 1 : r.status === "accepted" ? 2 : r.status === "in_transit" ? 3 : r.status === "delivered" ? steps.length - 1 : steps.findIndex((step) => step.key === r.status);
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1><div className="mt-2"><StatusBadge status={r.status} /></div></div>
@@ -85,9 +102,11 @@ export default function Receipt() {
           </li>)}
         </ol>
         {["failed", "disputed"].includes(r.status) && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">{r.status === "failed" ? "This order could not be completed." : "This order is under review."}</p>}
+        {r.status === "cancelled" && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">This order was cancelled before handoff.</p>}
         <p className="mt-4 border-t border-line pt-3 text-xs text-ink/60">{r.fulfillment_type === "pickup" ? `Meet at ${r.dropoff} · Free` : `${r.pickup} → ${r.dropoff} · GH₵${Number(r.fee).toFixed(2)}`}</p>
         {r.role === "seller" && r.buyer_id && <Link className="btn-ghost mt-3 w-full" to={`/chat/${r.product_id}/${r.buyer_id}`}>Message buyer</Link>}
       </section>
+      {canBuyerCancelDelivery(r) && <button type="button" disabled={busy} onClick={() => void cancelOrder()} className="btn-danger mb-4 w-full rounded-xl">{busy ? "Cancelling…" : "Cancel order"}</button>}
       {r.role === "seller" && r.status === "awaiting_seller" && <div className="card mb-4 space-y-2 rounded-2xl p-4">
         <p className="text-sm font-semibold">Can you fulfill this order?</p>
         <button type="button" disabled={busy} onClick={() => void respondToOrder(true)} className="btn-primary w-full">Yes, I have it</button>

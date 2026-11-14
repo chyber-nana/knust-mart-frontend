@@ -34,6 +34,10 @@ export async function apiForm<T>(path: string, form: FormData, method = "POST"):
 }
 
 export interface Delivery { id: string; role: "buyer" | "courier" | "seller"; status: string; fulfillment_type: "courier" | "pickup"; pickup: string; dropoff: string; fee: number; product_id?: string; product_title?: string; vendor_id?: string; vendor_name?: string; buyer_id?: string; reviewed?: boolean }
+export const canBuyerCancelDelivery = (delivery: Pick<Delivery, "role" | "status" | "fulfillment_type">) =>
+  delivery.role === "buyer" && (delivery.fulfillment_type === "courier"
+    ? ["awaiting_seller", "pending", "accepted"].includes(delivery.status)
+    : ["awaiting_seller", "ready_for_pickup"].includes(delivery.status));
 export interface Job { id: string; pickup: string; dropoff: string; fee: number; available_at: string | null; product_title: string }
 export const HALLS = ["Unity", "Independence", "Evandy", "Republic", "Queen Elizabeth II", "Africa", "Off-Campus Commercial Hub", "Main Library", "Student Union Building"];
 

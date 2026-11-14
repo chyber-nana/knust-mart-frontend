@@ -6,6 +6,7 @@ import AuthLayout from "../components/AuthLayout";
 import OutlookNotice from "../components/OutlookNotice";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import { useToast } from "../components/Toast";
+import { CURRENT_TERMS_VERSION } from "../terms";
 
 const STUDENT_DOMAINS = ["@st.knust.edu.gh", "@idl.knust.edu.gh"];
 
@@ -18,6 +19,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [message, setMessage] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +43,14 @@ export default function Register() {
       // The server decides student vs. visitor from the email domain. Businesses are created later.
       await api("/auth/register", {
         method: "POST",
-        body: { full_name: fullName.trim(), email: normalizedEmail, password, confirm_password: confirmPassword },
+        body: {
+          full_name: fullName.trim(),
+          email: normalizedEmail,
+          password,
+          confirm_password: confirmPassword,
+          terms_accepted: termsAccepted,
+          terms_version: CURRENT_TERMS_VERSION,
+        },
       });
       toast("Account created", studentEmail ? "Check your student email for the verification code." : "Check your email for the verification link.");
       if (studentEmail) {
@@ -95,6 +104,11 @@ export default function Register() {
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </span>
+        </label>
+
+        <label className="flex items-start gap-3 text-sm leading-5 text-ink/70">
+          <input type="checkbox" className="mt-1 h-4 w-4 accent-brand" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} required />
+          <span>I agree to the <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand underline underline-offset-2">Terms and Conditions</Link>, including the privacy, chat, safety, and order-cancellation terms.</span>
         </label>
 
         {err && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{err}</p>}

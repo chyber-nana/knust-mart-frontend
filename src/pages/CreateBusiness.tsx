@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Store } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import { useToast } from "../components/Toast";
+import { CURRENT_TERMS_VERSION } from "../terms";
 
 interface Activation { active: boolean; activation_type: string | null; free_slots_left: number; fee: number; currency: string }
 interface ActivateResult { status: "active" | "payment_required"; activation_type?: string; authorization_url?: string; reference?: string }
@@ -15,6 +16,7 @@ export default function CreateBusiness() {
   const [info, setInfo] = useState<Activation | null>(null);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [businessTermsAccepted, setBusinessTermsAccepted] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -29,7 +31,12 @@ export default function CreateBusiness() {
     try {
       const result = await api<ActivateResult>("/stores/activate", {
         method: "POST",
-        body: { store_name: name.trim(), hostel_or_business_address: address.trim() || null },
+        body: {
+          store_name: name.trim(),
+          hostel_or_business_address: address.trim() || null,
+          business_terms_accepted: businessTermsAccepted,
+          business_terms_version: CURRENT_TERMS_VERSION,
+        },
       });
       if (result.status === "payment_required" && result.authorization_url) {
         window.location.assign(result.authorization_url); // keep the button busy while we leave for Paystack
@@ -65,13 +72,17 @@ export default function CreateBusiness() {
           <span className="text-sm font-semibold">Business name</span>
           <input className="input" placeholder="e.g. Campus Tech Hub" value={name} onChange={(e) => setName(e.target.value)} minLength={2} maxLength={80} required />
         </label>
+        <label className="flex items-start gap-3 text-sm leading-5 text-ink/70">
+          <input type="checkbox" className="mt-1 h-4 w-4 accent-brand" checked={businessTermsAccepted} onChange={(e) => setBusinessTermsAccepted(e.target.checked)} required />
+          <span>I confirm I am authorized to operate this business and agree to the <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand underline underline-offset-2">Terms and Conditions</Link>, including the Business Terms.</span>
+        </label>
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Location <span className="font-normal text-ink/50">(optional)</span></span>
           <input className="input" placeholder="Hostel or business location" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={120} />
         </label>
         {!free && info && <p className="text-xs text-ink/60">You’ll pay securely with Paystack. Your storefront goes live as soon as the payment is confirmed.</p>}
         {err && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{err}</p>}
-        <button className="btn-primary w-full rounded-xl py-3.5" disabled={busy || !info || name.trim().length < 2}>
+        <button className="btn-primary w-full rounded-xl py-3.5" disabled={busy || !info || name.trim().length < 2 || !businessTermsAccepted}>
           {busy ? "One moment…" : free || !info ? "Create my business" : `Continue to pay GH₵${info.fee}`}
         </button>
       </form>

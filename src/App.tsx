@@ -27,6 +27,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import NotificationCenter from "./components/NotificationCenter";
 import OrderAlerts from "./components/OrderAlerts";
 import Settings from "./pages/Settings";
+import Terms from "./pages/Terms";
 
 function PublicLayout() {
   const { me, appealOnly, loading } = useAuth();
@@ -168,6 +169,7 @@ export default function App() {
       <Route element={<StandaloneLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/appeals" element={<Appeals />} />

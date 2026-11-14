@@ -7,8 +7,9 @@ const STYLES: Record<string, string> = {
   delivered: "bg-green-50 text-green-800 border-green-200",
   failed: "bg-red-50 text-red-800 border-red-200",
   disputed: "bg-red-50 text-red-800 border-red-200",
+  cancelled: "bg-red-50 text-red-800 border-red-200",
 };
-const LABELS: Record<string, string> = { awaiting_seller: "Waiting for seller", pending: "Waiting for courier", ready_for_pickup: "Ready for pickup", accepted: "Courier assigned", in_transit: "On the way", delivered: "Delivered", failed: "Unavailable / failed", disputed: "Disputed" };
+const LABELS: Record<string, string> = { awaiting_seller: "Waiting for seller", pending: "Waiting for courier", ready_for_pickup: "Ready for pickup", accepted: "Courier assigned", in_transit: "On the way", delivered: "Delivered", failed: "Unavailable / failed", disputed: "Disputed", cancelled: "Cancelled" };
 
 export default function StatusBadge({ status }: { status: string }) {
   return <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STYLES[status] ?? ""}`}>{LABELS[status] ?? status}</span>;
