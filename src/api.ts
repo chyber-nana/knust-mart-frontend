@@ -42,6 +42,13 @@ export interface Job { id: string; pickup: string; dropoff: string; fee: number;
 export const HALLS = ["Unity", "Independence", "Evandy", "Republic", "Queen Elizabeth II", "Africa", "Off-Campus Commercial Hub", "Main Library", "Student Union Building"];
 
 export const mediaUrl = (u?: string | null) => (u ? (u.startsWith("http") ? u : BASE + u) : "");
+export const whatsappUrl = (number: string) => {
+  const digits = number.replace(/\D/g, "");
+  const international = number.trim().startsWith("+")
+    ? digits
+    : digits.startsWith("0") ? `233${digits.slice(1)}` : digits;
+  return `https://wa.me/${international}`;
+};
 export async function upload(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
@@ -54,7 +61,7 @@ export async function upload(file: File): Promise<string> {
   return (await res.json()).url;
 }
 
-export interface Seller { id: string; name: string; user_type: string }
+export interface Seller { id: string; name: string; user_type: string; pickup_location?: string | null; phone_number?: string | null; whatsapp_number?: string | null }
 export interface Card { id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
 export interface Meta { categories: string[]; conditions: string[]; locations: string[]; fees: Record<string, { listing: number; promotion: number }>; delivery_fee: number }
 export interface ChatMessage { id: number; product_id: string; sender_id: string; receiver_id: string; message: string; sent_at: string }

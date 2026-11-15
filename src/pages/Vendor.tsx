@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MapPin, Pencil, Plus, Share2, Star } from "lucide-react";
-import { api, Card, mediaUrl } from "../api";
+import { MapPin, MessageCircle, Pencil, Phone, Plus, Share2, Star } from "lucide-react";
+import { api, Card, mediaUrl, whatsappUrl } from "../api";
 import { useAuth } from "../auth";
 import ProductCard from "../components/ProductCard";
 import SellerBadge from "../components/SellerBadge";
 import VendorCard from "../components/VendorCard";
 import Avatar from "../components/Avatar";
+import UserBadges from "../components/UserBadges";
 
-interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; logo_url: string | null; logo_position_x: number; logo_position_y: number; banner_url: string | null; banner_position_x: number; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
+interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; phone_number: string | null; whatsapp_number: string | null; badges: string[]; logo_url: string | null; logo_position_x: number; logo_position_y: number; banner_url: string | null; banner_position_x: number; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
 
 export default function Vendor() {
   const { id } = useParams();
@@ -41,7 +42,7 @@ export default function Vendor() {
         <div className="absolute -bottom-8 left-4 z-10 rounded-[30%] border-4 border-paper shadow-sm sm:-bottom-10 sm:left-6"><Avatar src={v.logo_url} name={v.name} size="lg" positionX={v.logo_position_x} positionY={v.logo_position_y} /></div>
       </div>
       <div className="flex flex-wrap items-end gap-3 px-3 sm:px-6">
-        <div className="min-w-0 flex-1 pb-1"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1><SellerBadge type={v.user_type} /></div>
+        <div className="min-w-0 flex-1 pb-1"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1><SellerBadge type={v.user_type} /><UserBadges badges={v.badges} /></div>
         <div className="flex w-full items-center gap-2 pb-1 sm:w-auto">
           {me?.id === v.id && (me.store_active || me.user_type !== "external") && <Link to="/sell" className="btn-primary min-w-0 flex-1 whitespace-nowrap sm:flex-none"><Plus size={16} />Add product</Link>}
           {me?.id === v.id && !me.store_active && <Link to="/store/create" className={`${me.user_type === "external" ? "btn-primary" : "btn-ghost"} min-w-0 flex-1 whitespace-nowrap sm:flex-none`}>Create business</Link>}
@@ -50,6 +51,10 @@ export default function Vendor() {
         </div>
       </div>
       {shareErr && <p role="alert" className="mt-2 text-sm text-red-700">{shareErr}</p>}
+      {(v.phone_number || v.whatsapp_number) && <div className="mt-4 flex flex-wrap gap-2">
+        {v.phone_number && <a className="btn-ghost" href={`tel:${v.phone_number}`}><Phone size={16} />Call seller</a>}
+        {v.whatsapp_number && <a className="btn-ghost" href={whatsappUrl(v.whatsapp_number)} target="_blank" rel="noreferrer"><MessageCircle size={16} />WhatsApp</a>}
+      </div>}
       <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink/70">
         <span><b className="text-ink">{v.sales}</b> sales</span>
         <span className="flex items-center gap-1"><Star size={14} />{v.rating ? `${v.rating.toFixed(1)} from ${v.review_count} reviews` : "No reviews yet"}</span>

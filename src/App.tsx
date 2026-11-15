@@ -11,6 +11,7 @@ import StoreActivated from "./pages/StoreActivated";
 import Appeals from "./pages/Appeals";
 import AdminAppeals from "./pages/AdminAppeals";
 import AdminAds from "./pages/AdminAds";
+import AdminBadges from "./pages/AdminBadges";
 import Inbox from "./pages/Inbox";
 import Chat from "./pages/Chat";
 import ReviewOrder from "./pages/ReviewOrder";
@@ -112,6 +113,7 @@ function PublicLayout() {
             <ThemeToggle />
             {me?.is_admin && <Link to="/admin/appeals" className="hidden rounded-full px-3 py-2 text-xs font-semibold text-ink/60 transition hover:bg-white md:block">Admin</Link>}
             {me?.is_admin && <Link to="/admin/ads" aria-label="Manage campus flyers" title="Flyers" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-ink/70 transition hover:-translate-y-0.5 hover:text-brand"><Megaphone size={16} /></Link>}
+            {me?.is_admin && <Link to="/admin/badges" className="hidden rounded-full px-3 py-2 text-xs font-semibold text-ink/60 transition hover:bg-white md:block">Badges</Link>}
             {appealOnly && <Link to="/appeals" className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold">Account appeal</Link>}
             {loading ? <span className="h-8 w-16 animate-pulse rounded-full bg-line/60" /> : !me && !appealOnly
               ? <div className="flex items-center gap-2"><Link to="/login" className="whitespace-nowrap rounded-full px-2 py-2 text-xs font-semibold text-ink/70 hover:text-ink sm:px-3">Sign in</Link><Link to="/register" className="whitespace-nowrap rounded-full bg-brand px-3 py-2 text-xs font-bold text-white transition hover:bg-brand/90 sm:px-4">Join campus</Link></div>
@@ -183,6 +185,7 @@ export default function App() {
           <Route path="/chat/:productId/:counterpartId" element={<Chat />} />
           <Route path="/admin/appeals" element={<AdminAppeals />} />
           <Route path="/admin/ads" element={<AdminAds />} />
+          <Route path="/admin/badges" element={<AdminBadges />} />
           <Route path="/sell" element={<Sell />} />
           <Route path="/store/create" element={<CreateBusiness />} />
           <Route path="/store/activated" element={<StoreActivated />} />

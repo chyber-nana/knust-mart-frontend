@@ -12,6 +12,13 @@ const TIPS = [
   "A short, honest description beats a long, vague one.",
   "Student emails live in Outlook. Check Junk if a code is slow.",
 ];
+const STATUS_MESSAGES = [
+  "Negotiating with Unity Hall security...",
+  "Locking in the best campus deals...",
+  "Checking the route to your favourite hall...",
+  "Making sure the Student Union is still open...",
+  "Warming up the marketplace for you...",
+];
 
 function Logo({ pulse }: { pulse?: boolean }) {
   return (
@@ -78,6 +85,7 @@ export default function WakeGate({ children }: { children: ReactNode }) {
 
   const progress = ready ? 100 : Math.min(92, 92 * (1 - Math.exp(-elapsed / 20)));
   const tip = TIPS[Math.floor(elapsed / 5) % TIPS.length];
+  const status = STATUS_MESSAGES[Math.floor(elapsed / 7) % STATUS_MESSAGES.length];
   const stuck = elapsed > 75 && !ready;
 
   return (
@@ -86,7 +94,7 @@ export default function WakeGate({ children }: { children: ReactNode }) {
         <div className="mb-6 flex justify-center"><Logo pulse /></div>
         <h1 className="font-display text-2xl font-bold">{ready ? "All set!" : "Waking up KNUST Mart"}</h1>
         <p className="mt-1 text-sm text-ink/60">
-          {ready ? "Taking you in…" : "The server naps when it's quiet. This can take up to a minute."}
+          {ready ? "Taking you in…" : `${status} This can take up to a minute.`}
         </p>
 
         <div className="mt-6 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label="Waking up the server">
@@ -107,7 +115,7 @@ export default function WakeGate({ children }: { children: ReactNode }) {
           Tap the cedi while you wait
           <span className="min-w-[2ch] rounded-full bg-brand/10 px-2 py-0.5 text-xs text-brand">{taps}</span>
         </button>
-        {taps >= 10 && <p className="wake-tip mt-2 text-xs text-ink/55">{taps >= 30 ? "Okay, you should run a store 💰" : "Nice reflexes! 🚀"}</p>}
+        {taps >= 10 && <p className="wake-tip mt-2 text-xs text-ink/55">{taps >= 30 ? "That’s enough cedis for a campus business." : "Nice reflexes. Keep going."}</p>}
 
         {stuck && (
           <div className="mt-6 space-y-2">

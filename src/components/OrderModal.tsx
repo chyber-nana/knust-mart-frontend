@@ -26,6 +26,7 @@ export default function OrderModal({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const image = product.images?.[0] ?? product.image;
+  const pickupLocation = product.seller.pickup_location || product.hall_location;
   const isMine = me?.id === product.seller.id;
   const isAvailable = !product.status || product.status === "active";
 
@@ -41,7 +42,7 @@ export default function OrderModal({
   }, [onClose]);
 
   const placeOrder = async () => {
-    if (!location || !meta) return;
+    if (!meta || (fulfillment === "courier" && !location) || (fulfillment === "pickup" && !pickupLocation)) return;
     setBusy(true);
     setError("");
     try {
@@ -49,8 +50,8 @@ export default function OrderModal({
         method: "POST",
         body: {
           product_id: product.id,
-          pickup_location: product.hall_location ?? location,
-          dropoff_location: location,
+          pickup_location: pickupLocation,
+          dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,
         },
       });
@@ -64,10 +65,10 @@ export default function OrderModal({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/55 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
+      className="modal-backdrop fixed inset-0 z-[70] flex items-center justify-center bg-black/55 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}
     >
-      <section role="dialog" aria-modal="true" aria-labelledby="order-modal-title" className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl">
+      <section role="dialog" aria-modal="true" aria-labelledby="order-modal-title" className="modal-panel relative w-full max-w-sm overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl">
         <div className="relative aspect-[4/3] bg-[#eae8e0]">
           {image && <img src={mediaUrl(image)} alt={product.title} className="h-full w-full object-cover" />}
           <button type="button" aria-label="Close order popup" onClick={onClose} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink shadow">
@@ -89,13 +90,20 @@ export default function OrderModal({
                   <button type="button" aria-pressed={fulfillment === "courier"} onClick={() => setFulfillment("courier")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "courier" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Courier · GH₵{meta?.delivery_fee.toFixed(2) ?? "–"}</button>
                   <button type="button" aria-pressed={fulfillment === "pickup"} onClick={() => setFulfillment("pickup")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "pickup" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Pickup · Free</button>
                 </div>
-                <label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2">
-                  <MapPin size={17} className="shrink-0 text-brand" />
-                  <select aria-label="Your campus location" className="min-w-0 flex-1 bg-transparent py-1 text-sm outline-none" value={location} onChange={(event) => setLocation(event.target.value)}>
-                    <option value="">Your campus location</option>{meta?.locations.map((item) => <option key={item}>{item}</option>)}
-                  </select>
-                </label>
-                <button type="button" className="btn-primary w-full" disabled={!location || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
+                {fulfillment === "courier" ? (
+                  <label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2">
+                    <MapPin size={17} className="shrink-0 text-brand" />
+                    <select aria-label="Delivery hall or location" className="min-w-0 flex-1 bg-transparent py-1 text-sm outline-none" value={location} onChange={(event) => setLocation(event.target.value)}>
+                      <option value="">Choose your delivery hall or hub</option>{meta?.locations.map((item) => <option key={item}>{item}</option>)}
+                    </select>
+                  </label>
+                ) : (
+                  <p className="rounded-xl border border-line bg-white px-3 py-3 text-sm">
+                    <span className="block text-xs font-semibold uppercase tracking-wide text-ink/50">Pickup location</span>
+                    <span className="mt-1 flex items-center gap-2"><MapPin size={16} className="shrink-0 text-brand" />{pickupLocation || "Seller has not added a pickup location"}</span>
+                  </p>
+                )}
+                <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && !location) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
           {showProductLink && <Link to={`/products/${product.id}`} onClick={onClose} className="btn-ghost w-full">View product</Link>}

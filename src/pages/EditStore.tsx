@@ -9,6 +9,8 @@ interface StoreForm {
   store_name: string;
   store_bio: string;
   hostel_or_business_address: string;
+  phone_number: string;
+  whatsapp_number: string;
   logo_url: string;
   logo_position_x: number;
   logo_position_y: number;
@@ -28,6 +30,8 @@ const initialForm: StoreForm = {
   store_name: "",
   store_bio: "",
   hostel_or_business_address: "",
+  phone_number: "",
+  whatsapp_number: "",
   logo_url: "",
   logo_position_x: 50,
   logo_position_y: 50,
@@ -52,6 +56,8 @@ export default function EditStore() {
         store_name: v.name,
         store_bio: v.bio ?? "",
         hostel_or_business_address: v.address ?? "",
+        phone_number: v.phone_number ?? "",
+        whatsapp_number: v.whatsapp_number ?? "",
         logo_url: v.logo_url ?? "",
         logo_position_x: v.logo_position_x ?? 50,
         logo_position_y: v.logo_position_y ?? 50,
@@ -62,7 +68,7 @@ export default function EditStore() {
       .catch((e) => setErr(e.message));
   }, [me]);
 
-  const set = (key: "store_name" | "store_bio" | "hostel_or_business_address") =>
+  const set = (key: "store_name" | "store_bio" | "hostel_or_business_address" | "phone_number" | "whatsapp_number") =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = e.target.value;
       setF((current) => ({ ...current, [key]: value }));
@@ -152,6 +158,8 @@ export default function EditStore() {
           </div>
           <label className="block space-y-1"><span className="text-xs font-semibold uppercase tracking-wide text-ink/55">Store name</span><input className="input" placeholder="e.g. Campus Tech Hub" value={f.store_name} onChange={set("store_name")} maxLength={80} /></label>
           <label className="block space-y-1"><span className="text-xs font-semibold uppercase tracking-wide text-ink/55">Location</span><input className="input" placeholder="Hostel or business location" value={f.hostel_or_business_address} onChange={set("hostel_or_business_address")} maxLength={120} /></label>
+          <label className="block space-y-1"><span className="text-xs font-semibold uppercase tracking-wide text-ink/55">Phone number</span><input className="input" type="tel" autoComplete="tel" placeholder="+233…" value={f.phone_number} onChange={set("phone_number")} maxLength={32} /></label>
+          <label className="block space-y-1"><span className="text-xs font-semibold uppercase tracking-wide text-ink/55">WhatsApp number</span><input className="input" type="tel" placeholder="+233…" value={f.whatsapp_number} onChange={set("whatsapp_number")} maxLength={32} /><span className="text-xs text-ink/55">Include your country code so buyers can message you internationally.</span></label>
           <label className="block space-y-1"><span className="text-xs font-semibold uppercase tracking-wide text-ink/55">About your store</span><textarea className="input min-h-28" placeholder="What can students find at your shop?" value={f.store_bio} onChange={set("store_bio")} maxLength={500} /></label>
           {err && <p className="text-sm text-red-700">{err}</p>}
           <button className="btn-primary w-full rounded-xl" disabled={busy || !!cropTarget}>{busy ? "Saving…" : "Save storefront"}</button>

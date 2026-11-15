@@ -1,6 +1,6 @@
-import { FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, FileText, KeyRound, LogOut, Truck } from "lucide-react";
+import { Award, Building2, FileText, KeyRound, LogOut, Truck } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
@@ -8,6 +8,12 @@ import ThemeToggle from "../components/ThemeToggle";
 
 export default function Settings() {
   const { me, logout } = useAuth();
+  const [location, setLocation] = useState(me?.hostel_or_business_address ?? "");
+  const [phone, setPhone] = useState(me?.phone_number ?? "");
+  const [whatsapp, setWhatsapp] = useState(me?.whatsapp_number ?? "");
+  const [contactBusy, setContactBusy] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactError, setContactError] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,6 +47,28 @@ export default function Settings() {
       setError((x as Error).message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveContacts = async (event: FormEvent) => {
+    event.preventDefault();
+    setContactBusy(true);
+    setContactMessage("");
+    setContactError("");
+    try {
+      await api("/vendors/me/contacts", {
+        method: "PATCH",
+        body: {
+          phone_number: phone,
+          whatsapp_number: whatsapp,
+          hostel_or_business_address: location,
+        },
+      });
+      setContactMessage("Seller contact details updated.");
+    } catch (cause) {
+      setContactError((cause as Error).message);
+    } finally {
+      setContactBusy(false);
     }
   };
 
@@ -80,7 +108,22 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">Terms and Conditions</span><span className="text-xs text-ink/60">Review the current terms and business rules</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
+        {me?.is_admin && <Link to="/admin/badges" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+          <Award size={19} className="text-gold" />
+          <span className="flex-1"><span className="block text-sm font-semibold">Manage user badges</span><span className="text-xs text-ink/60">Assign or revoke community badges</span></span>
+          <span aria-hidden="true" className="text-ink/40">›</span>
+        </Link>}
       </section>
+
+      <form onSubmit={saveContacts} className="card space-y-3 p-4 sm:p-5">
+        <div><h2 className="font-display text-lg font-bold">Seller contact details</h2><p className="mt-1 text-xs text-ink/60">Buyers can use these details from your storefront and product pages.</p></div>
+        <label className="block space-y-1 text-sm"><span className="font-medium">Pickup or business location</span><input className="input" placeholder="Hall, hostel, or pickup spot" maxLength={120} value={location} onChange={(event) => setLocation(event.target.value)} /><span className="block text-xs text-ink/55">This is shown to buyers choosing in-person pickup.</span></label>
+        <label className="block space-y-1 text-sm"><span className="font-medium">Phone number</span><input className="input" type="tel" autoComplete="tel" placeholder="+233…" maxLength={32} value={phone} onChange={(event: ChangeEvent<HTMLInputElement>) => setPhone(event.target.value)} /></label>
+        <label className="block space-y-1 text-sm"><span className="font-medium">WhatsApp number</span><input className="input" type="tel" placeholder="+233…" maxLength={32} value={whatsapp} onChange={(event: ChangeEvent<HTMLInputElement>) => setWhatsapp(event.target.value)} /><span className="block text-xs text-ink/55">Include your country code.</span></label>
+        {contactError && <p role="alert" className="text-sm text-red-700">{contactError}</p>}
+        {contactMessage && <p role="status" className="text-sm text-brand">{contactMessage}</p>}
+        <button type="submit" className="btn-primary" disabled={contactBusy}>{contactBusy ? "Saving…" : "Save contact details"}</button>
+      </form>
 
       <form onSubmit={changePassword} className="card space-y-3 p-4 sm:p-5">
         <div className="flex items-center gap-2"><KeyRound size={18} className="text-brand" /><h2 className="font-display text-lg font-bold">Change password</h2></div>

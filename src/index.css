@@ -21,35 +21,17 @@
 }
 body {
   @apply bg-paper text-ink font-sans antialiased;
-  background-image:
-    radial-gradient(ellipse at 2% 7%, rgb(233 186 79 / .12), transparent 25rem),
-    radial-gradient(ellipse at 96% 28%, rgb(101 191 136 / .11), transparent 28rem);
-  background-attachment: fixed;
-}
-body::before {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(rgb(31 93 58 / .045) .7px, transparent .7px);
-  background-size: 15px 15px;
-  pointer-events: none;
 }
 .auth-page {
-  background:
-    radial-gradient(ellipse at 8% 8%, rgb(233 186 79 / .18), transparent 25rem),
-    radial-gradient(ellipse at 94% 88%, rgb(101 191 136 / .16), transparent 28rem);
+  background-color: rgb(var(--color-paper));
 }
 .auth-art {
   isolation: isolate;
-  background: linear-gradient(145deg, #267347, #1f5d3a 52%, #16452d);
-  box-shadow: 0 24px 60px rgb(31 93 58 / .2);
+  background: #1f5d3a;
+  box-shadow: 0 14px 36px rgb(31 93 58 / .12);
 }
 .auth-art-tile { box-shadow: 0 12px 30px rgb(0 0 0 / .1); }
-.dark .auth-art { background: linear-gradient(145deg, #245d3c, #19482f 52%, #123923); }
+.dark .auth-art { background: #19482f; }
 html { scroll-behavior: smooth; }
 ::selection { @apply bg-brand/15 text-ink; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
@@ -100,20 +82,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .market-hero {
   isolation: isolate;
-  background-image: linear-gradient(118deg, rgb(232 237 223 / .98), rgb(243 239 217 / .95) 58%, rgb(241 226 185 / .78));
-  box-shadow: 0 14px 36px rgb(52 71 43 / .07);
+  background-color: #edf1e8;
+  box-shadow: 0 8px 24px rgb(52 71 43 / .05);
 }
 .market-hero::after {
-  content: "";
-  position: absolute;
-  right: 12%;
-  bottom: -3.2rem;
-  width: 7rem;
-  height: 7rem;
-  border: 1rem solid rgb(255 255 255 / .35);
-  border-radius: 38% 62% 55% 45%;
-  transform: rotate(-18deg);
-  pointer-events: none;
+  display: none;
 }
 .site-header {
   border-bottom: 1px solid rgb(229 223 208 / .65);
@@ -134,7 +107,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: transform .24s cubic-bezier(.2,.7,.25,1), box-shadow .24s ease, border-color .2s ease;
 }
 .product-card:hover {
-  transform: translateY(-4px) rotate(-.2deg);
+  transform: translateY(-2px);
   border-color: rgb(101 191 136 / .55);
   box-shadow: 0 14px 30px rgb(48 69 44 / .12);
 }
@@ -152,10 +125,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .btn:hover { transform: translateY(-2px) scale(1.015); }
 .btn:active { transform: translateY(1px) scale(.985); }
 .btn-primary {
-  background-image: linear-gradient(110deg, #1f5d3a, #28764a);
-  box-shadow: 0 5px 12px rgb(31 93 58 / .17);
+  background-color: #1f5d3a;
+  box-shadow: 0 2px 6px rgb(31 93 58 / .12);
 }
-.btn-primary:hover { box-shadow: 0 8px 18px rgb(31 93 58 / .24); }
+.btn-primary:hover { background-color: #19482f; box-shadow: 0 4px 10px rgb(31 93 58 / .16); }
 .input {
   border-radius: 1rem;
   background-color: var(--surface);
@@ -206,10 +179,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .dark select { color-scheme: dark; }
 .dark .market-hero { background-color: #30382e; }
 .dark .market-hero {
-  background-image: linear-gradient(118deg, rgb(48 56 46 / .98), rgb(53 53 40 / .96) 58%, rgb(64 53 35 / .84));
+  background-color: #30382e;
   box-shadow: 0 14px 36px rgb(0 0 0 / .15);
 }
-.dark body::before { background-image: radial-gradient(rgb(138 203 159 / .05) .7px, transparent .7px); }
 .dark .site-header { border-color: rgb(67 70 62 / .7); background: rgb(25 27 24 / .84); }
 .dark .card, .dark .product-card {
   box-shadow: 0 3px 14px rgb(0 0 0 / .12);
@@ -217,7 +189,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .dark .card:hover, .dark .product-card:hover {
   box-shadow: 0 14px 28px rgb(0 0 0 / .22);
 }
-.dark .btn-primary { background-image: linear-gradient(110deg, #1f5d3a, #28764a); }
+.dark .btn-primary { background-color: #1f5d3a; }
 .dark .btn-ghost { background-color: var(--surface); }
 .dark .filter-pill-active { background-color: rgb(31 93 58 / .28); }
 .dark .category-pill-active { background-color: #1f5d3a; }
@@ -324,7 +296,13 @@ html { scroll-padding-top: 4.5rem; }
 @keyframes page-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ad-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes nav-pop { 0% { transform: scale(.8); } 100% { transform: scale(1); } }
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-enter { from { opacity: 0; transform: translateY(6px) scale(.99); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .modal-backdrop { animation: modal-fade .16s ease-out both; }
+  .modal-panel { animation: modal-enter .18s ease-out both; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .page-enter, .ad-progress { animation: none; }
+  .page-enter, .ad-progress, .modal-backdrop, .modal-panel { animation: none; }
   .ad-progress { transform: scaleX(1); }
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, Card, Meta, mediaUrl } from "../api";
+import { api, Card, Meta, mediaUrl, whatsappUrl } from "../api";
 import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
 import OrderModal from "../components/OrderModal";
+import { MessageCircle, Phone } from "lucide-react";
 
 interface Detail extends Card { description: string | null; images: string[]; status: string }
 
@@ -65,6 +66,10 @@ export default function ProductDetail() {
         <div><p className="mb-2 text-[10px] font-bold uppercase tracking-[.17em] text-gold">{p.category}{p.hall_location && <> <span className="px-1 text-ink/30">/</span> {p.hall_location}</>}</p><h1 className="font-display text-3xl font-bold leading-tight tracking-[-.03em] sm:text-4xl">{p.title}</h1><p className="mt-3 font-display text-3xl font-bold text-brand">GH₵{p.price.toFixed(2)}</p></div>
         {p.description && <p className="whitespace-pre-line text-sm leading-6 text-ink/70">{p.description}</p>}
         <Link to={`/vendors/${p.seller.id}`} className="card flex items-center justify-between rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span><span className="block text-[10px] font-bold uppercase tracking-wide text-ink/45">Sold by</span><span className="mt-1 block text-sm font-semibold">{p.seller.name}</span></span><SellerBadge type={p.seller.user_type} /></Link>
+        {(p.seller.phone_number || p.seller.whatsapp_number) && <div className="flex flex-wrap gap-2">
+          {p.seller.phone_number && <a className="btn-ghost" href={`tel:${p.seller.phone_number}`}><Phone size={16} />Call seller</a>}
+          {p.seller.whatsapp_number && <a className="btn-ghost" href={whatsappUrl(p.seller.whatsapp_number)} target="_blank" rel="noreferrer"><MessageCircle size={16} />WhatsApp</a>}
+        </div>}
         {!mine && <Link
           to={me ? `/chat/${p.id}/${p.seller.id}` : "/login"}
           state={!me ? { from: `/chat/${p.id}/${p.seller.id}` } : undefined}
