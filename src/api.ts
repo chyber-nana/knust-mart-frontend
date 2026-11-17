@@ -62,7 +62,8 @@ export async function upload(file: File): Promise<string> {
 }
 
 export interface Seller { id: string; name: string; user_type: string; pickup_location?: string | null; phone_number?: string | null; whatsapp_number?: string | null }
-export interface Card { id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
+export interface Card {
+  stock: number | null; id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
 export interface Meta { categories: string[]; conditions: string[]; locations: string[]; fees: Record<string, { listing: number; promotion: number }>; delivery_fee: number }
 export interface ChatMessage { id: number; product_id: string; sender_id: string; receiver_id: string; message: string; sent_at: string }
 export interface ChatThread { product_id: string; product_title: string; counterpart_id: string; counterpart_name: string; last_message: string; sent_at: string; unread_count: number }

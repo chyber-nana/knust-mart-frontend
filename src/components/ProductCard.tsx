@@ -12,6 +12,7 @@ export default function ProductCard({ p, onClick }: { p: Card; onClick?: () => v
       </div>
       <div className="space-y-2 p-3 sm:p-3.5">
         <p className="font-display text-lg font-bold tracking-tight sm:text-xl">GH₵{p.price.toFixed(2)}</p>
+        {p.stock != null && p.stock > 0 && p.stock <= 5 && <p className="text-[11px] font-semibold text-red-700">Only {p.stock} left</p>}
         <p className="line-clamp-2 min-h-10 text-[13px] leading-5 text-ink/80">{p.title}</p>
         <p className="flex items-center gap-1 truncate text-[11px] text-ink/50">
           {p.category === "Services" ? <Scissors size={12} className="shrink-0" /> : <MapPin size={12} className="shrink-0" />}

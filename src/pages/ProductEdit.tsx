@@ -10,6 +10,7 @@ interface ProductData {
   category: string;
   condition: string | null;
   hall_location: string | null;
+  stock: number | null;
   images: string[];
 }
 
@@ -18,7 +19,7 @@ export default function ProductEdit() {
   const nav = useNavigate();
   const [meta, setMeta] = useState<Meta | null>(null);
   const [images, setImages] = useState<string[]>([]);
-  const [form, setForm] = useState({ title: "", description: "", price: "", category: "", condition: "", hall_location: "" });
+  const [form, setForm] = useState({ title: "", description: "", price: "", category: "", condition: "", hall_location: "", stock: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const isService = form.category === "Services";
@@ -35,6 +36,7 @@ export default function ProductEdit() {
           category: product.category,
           condition: product.condition ?? "",
           hall_location: product.hall_location ?? "",
+          stock: product.stock == null ? "" : String(product.stock),
         });
       })
       .catch((x) => setErr((x as Error).message));
@@ -43,7 +45,7 @@ export default function ProductEdit() {
   const set = (key: string) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
     setForm((current) => key === "category" && value === "Services"
-      ? { ...current, category: value, condition: "", hall_location: "" }
+      ? { ...current, category: value, condition: "", hall_location: "", stock: "" }
       : { ...current, [key]: value });
   };
   const addPhoto = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +66,7 @@ export default function ProductEdit() {
     try {
       await api(`/products/${id}`, {
         method: "PATCH",
-        body: { ...form, condition: isService ? null : form.condition, hall_location: isService ? null : form.hall_location, price: Number(form.price), image_urls: images },
+        body: { ...form, condition: isService ? null : form.condition, hall_location: isService ? null : form.hall_location, stock: isService ? null : Number(form.stock), price: Number(form.price), image_urls: images },
       });
       nav(`/products/${id}`);
     } catch (x) {
@@ -82,6 +84,10 @@ export default function ProductEdit() {
         <input className="input" type="number" min="0.01" step="0.01" placeholder="Price (GH₵)" value={form.price} onChange={set("price")} required />
         <select className="input" value={form.category} onChange={set("category")} required>{meta?.categories.map((category) => <option key={category}>{category}</option>)}</select>
         {!isService && <>
+          <label className="block text-sm font-semibold">Units in stock
+            <input className="input mt-1 font-normal" type="number" min="0" step="1" value={form.stock} onChange={set("stock")} required />
+            <span className="text-xs font-normal text-ink/55">Units still available to order. Update this whenever you restock. At 0 the listing closes.</span>
+          </label>
           <select className="input" value={form.condition} onChange={set("condition")} required><option value="">Condition</option>{meta?.conditions.map((condition) => <option key={condition}>{condition}</option>)}</select>
           <select className="input" value={form.hall_location} onChange={set("hall_location")} required><option value="">Item location</option>{meta?.locations.map((location) => <option key={location}>{location}</option>)}</select>
         </>}
