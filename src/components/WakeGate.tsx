@@ -1,30 +1,73 @@
-import { ReactNode, useEffect, useState } from "react";
-import { Coins, Store } from "lucide-react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { Store } from "lucide-react";
 import { BASE } from "../api";
 
-const TIPS = [
-  "Meet buyers in busy spots like the library or the Student Union Building.",
-  "Clear, bright photos sell faster. Daylight is free!",
-  "Add your hall or hostel to every listing so couriers know where to go.",
-  "Answer chats quickly. Fast sellers get better reviews.",
-  "Selling a service? Say what you offer and your usual turnaround time.",
-  "Use the QR receipt at handover so both sides are protected.",
-  "A short, honest description beats a long, vague one.",
-  "Student emails live in Outlook. Check Junk if a code is slow.",
-];
-const STATUS_MESSAGES = [
-  "Negotiating with Unity Hall security...",
-  "Locking in the best campus deals...",
-  "Checking the route to your favourite hall...",
-  "Making sure the Student Union is still open...",
-  "Warming up the marketplace for you...",
-];
+const STATUS_MESSAGES = ["Waking the server", "Stocking the shelves", "Almost open"];
+const CELLS = 9;
+
+/** Tap-the-target reaction game: one tile lights up, tap it before it moves. Speeds up as you score. */
+function TapGame() {
+  const [target, setTarget] = useState(4);
+  const [score, setScore] = useState(0);
+  const [best, setBest] = useState(0);
+  const [miss, setMiss] = useState(false);
+  const scoreRef = useRef(0);
+  const timer = useRef<number>();
+
+  const next = useCallback((from: number) => {
+    window.clearTimeout(timer.current);
+    let cell = from;
+    while (cell === from) cell = Math.floor(Math.random() * CELLS);
+    setTarget(cell);
+    const delay = Math.max(550, 1100 - scoreRef.current * 25);
+    timer.current = window.setTimeout(() => {
+      if (scoreRef.current > 0) { scoreRef.current = 0; setScore(0); setMiss(true); window.setTimeout(() => setMiss(false), 250); }
+      next(cell);
+    }, delay);
+  }, []);
+
+  useEffect(() => { next(4); return () => window.clearTimeout(timer.current); }, [next]);
+
+  const press = (cell: number) => {
+    if (cell === target) {
+      scoreRef.current += 1;
+      setScore(scoreRef.current);
+      setBest((value) => Math.max(value, scoreRef.current));
+      next(cell);
+    } else if (scoreRef.current > 0) {
+      scoreRef.current = 0;
+      setScore(0);
+      setMiss(true);
+      window.setTimeout(() => setMiss(false), 250);
+    }
+  };
+
+  return (
+    <div className="mx-auto mt-8 w-full max-w-[16rem]">
+      <div className="mb-3 flex items-center justify-between text-xs font-semibold text-ink/60">
+        <span>Score <span className="ml-1 tabular-nums text-ink">{score}</span></span>
+        <span>Best <span className="ml-1 tabular-nums text-ink">{best}</span></span>
+      </div>
+      <div className={`grid grid-cols-3 gap-2 ${miss ? "wake-miss" : ""}`} role="group" aria-label="Tap the lit tile">
+        {Array.from({ length: CELLS }, (_, cell) => (
+          <button
+            key={cell}
+            type="button"
+            aria-label={cell === target ? "Lit tile, tap it" : "Empty tile"}
+            onPointerDown={() => press(cell)}
+            className={`wake-tile aspect-square touch-manipulation select-none rounded-xl border transition-colors duration-100 ${cell === target ? "wake-tile-on border-brand bg-brand" : "border-line bg-[var(--surface)]"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Logo({ pulse }: { pulse?: boolean }) {
   return (
     <div className="relative grid h-20 w-20 place-items-center">
       {pulse && <span aria-hidden="true" className="wake-ring absolute inset-0 rounded-[30%] bg-brand/30" />}
-      <div className="wake-logo relative grid h-20 w-20 place-items-center rounded-[30%] bg-brand text-white shadow-lg shadow-brand/30">
+      <div className="wake-logo relative grid h-20 w-20 place-items-center rounded-[30%] bg-brand text-white">
         <Store size={34} aria-hidden="true" />
       </div>
     </div>
@@ -40,10 +83,8 @@ export default function WakeGate({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [slow, setSlow] = useState(false);
   const [done, setDone] = useState(false);
-  const [attempt, setAttempt] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [run, setRun] = useState(0);
-  const [taps, setTaps] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -63,7 +104,6 @@ export default function WakeGate({ children }: { children: ReactNode }) {
         }
         window.clearTimeout(abort);
         if (!alive) return;
-        setAttempt(i + 1);
         await new Promise((resolve) => window.setTimeout(resolve, Math.min(1500 + i * 500, 4000)));
       }
     })();
@@ -84,44 +124,27 @@ export default function WakeGate({ children }: { children: ReactNode }) {
   }
 
   const progress = ready ? 100 : Math.min(92, 92 * (1 - Math.exp(-elapsed / 20)));
-  const tip = TIPS[Math.floor(elapsed / 5) % TIPS.length];
-  const status = STATUS_MESSAGES[Math.floor(elapsed / 7) % STATUS_MESSAGES.length];
+  const status = STATUS_MESSAGES[Math.floor(elapsed / 6) % STATUS_MESSAGES.length];
   const stuck = elapsed > 75 && !ready;
 
   return (
     <div className="grid min-h-screen place-items-center bg-paper px-6 text-ink">
       <div className="w-full max-w-sm text-center">
         <div className="mb-6 flex justify-center"><Logo pulse /></div>
-        <h1 className="font-display text-2xl font-bold">{ready ? "All set!" : "Waking up KNUST Mart"}</h1>
-        <p className="mt-1 text-sm text-ink/60">
-          {ready ? "Taking you in…" : `${status} This can take up to a minute.`}
-        </p>
+        <h1 className="font-display text-2xl font-bold">{ready ? "All set" : "KNUST Mart is starting"}</h1>
+        <p key={ready ? "ready" : status} className="wake-tip mt-1 text-sm text-ink/60" aria-live="polite">{ready ? "Taking you in" : status}</p>
 
-        <div className="mt-6 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label="Waking up the server">
+        <div className="mx-auto mt-5 h-1.5 max-w-[16rem] overflow-hidden rounded-full bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label="Loading">
           <div className="wake-bar h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
         </div>
-        {!ready && attempt > 0 && <p className="mt-2 text-xs text-ink/45">Still knocking… attempt {attempt}</p>}
 
-        <p key={tip} className="wake-tip mt-7 min-h-[3rem] rounded-2xl bg-brand/5 px-4 py-3 text-sm leading-5 text-ink/75">
-          <span className="font-semibold text-brand">Campus tip: </span>{tip}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => setTaps((count) => count + 1)}
-          className="coin-tap mx-auto mt-6 flex items-center gap-2 rounded-full border border-line bg-[var(--surface)] px-5 py-3 text-sm font-semibold shadow-sm transition hover:border-brand/40"
-        >
-          <Coins size={18} className="text-gold" aria-hidden="true" />
-          Tap the cedi while you wait
-          <span className="min-w-[2ch] rounded-full bg-brand/10 px-2 py-0.5 text-xs text-brand">{taps}</span>
-        </button>
-        {taps >= 10 && <p className="wake-tip mt-2 text-xs text-ink/55">{taps >= 30 ? "That’s enough cedis for a campus business." : "Nice reflexes. Keep going."}</p>}
+        {!ready && <TapGame />}
 
         {stuck && (
           <div className="mt-6 space-y-2">
             <p className="text-sm text-ink/70">This is taking longer than usual.</p>
             <div className="flex justify-center gap-2">
-              <button type="button" className="btn-primary" onClick={() => { setElapsed(0); setAttempt(0); setRun((n) => n + 1); }}>Try again</button>
+              <button type="button" className="btn-primary" onClick={() => { setElapsed(0); setRun((n) => n + 1); }}>Try again</button>
               <button type="button" className="btn-ghost" onClick={() => setDone(true)}>Continue anyway</button>
             </div>
           </div>

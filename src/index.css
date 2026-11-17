@@ -57,11 +57,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes ad-slide-in {
-  from { opacity: 0; transform: translateX(1.25rem) scale(.99); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
-}
-.ad-slide { animation: ad-slide-in .55s cubic-bezier(.2,.7,.25,1) both; }
+.ad-slide { transition: opacity .7s ease-in-out; will-change: opacity; }
 @keyframes offer-wave {
   0% { transform: scale(1); opacity: .7; }
   80%, 100% { transform: scale(1.09); opacity: 0; }
@@ -90,8 +86,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .site-header {
   border-bottom: 1px solid rgb(229 223 208 / .65);
-  background: rgb(250 248 241 / .82);
-  backdrop-filter: blur(18px);
+  background: rgb(250 248 241);
 }
 .site-nav {
   transition: background-color .2s ease, box-shadow .2s ease;
@@ -182,7 +177,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background-color: #30382e;
   box-shadow: 0 14px 36px rgb(0 0 0 / .15);
 }
-.dark .site-header { border-color: rgb(67 70 62 / .7); background: rgb(25 27 24 / .84); }
+.dark .site-header { border-color: rgb(67 70 62 / .7); background: rgb(25 27 24); }
 .dark .card, .dark .product-card {
   box-shadow: 0 3px 14px rgb(0 0 0 / .12);
 }
@@ -212,7 +207,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .scroll-reveal { opacity: 1; transform: none; }
   .fresh-offer-pulse::before { animation: none; }
   .animate-rise { animation: none; }
-  .ad-slide { animation: none; }
+  .ad-slide { transition: none; }
   .card, .product-card, .btn, .input { transition: none; }
   .card:hover, .product-card:hover, .btn:hover, .btn:active { transform: none; }
 }
@@ -246,11 +241,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @keyframes wake-bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
 @keyframes wake-ring { 0% { transform: scale(.85); opacity: .55; } 100% { transform: scale(1.7); opacity: 0; } }
 @keyframes wake-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes tile-pop { 0% { transform: scale(.88); } 100% { transform: scale(1); } }
+@keyframes wake-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 @keyframes coin-pop { 0% { transform: scale(1); } 40% { transform: scale(.9); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: no-preference) {
   .wake-logo { animation: wake-bob 1.6s ease-in-out infinite; }
   .wake-ring { animation: wake-ring 1.8s ease-out infinite; }
   .wake-tip { animation: wake-fade .5s ease both; }
+  .wake-tile-on { animation: tile-pop .14s ease-out both; }
+  .wake-tile:active { transform: scale(.94); }
+  .wake-miss { animation: wake-shake .22s ease; }
   .coin-tap:active { animation: coin-pop .18s ease; }
 }
 

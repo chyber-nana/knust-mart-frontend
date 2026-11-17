@@ -1,8 +1,9 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Award, Building2, FileText, KeyRound, LogOut, Truck } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
+import { BADGES } from "../components/badgeCatalog";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -20,6 +21,12 @@ export default function Settings() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [earned, setEarned] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!me?.id) return;
+    api<{ badges?: string[] }>(`/vendors/${me.id}`).then((v) => setEarned(v.badges ?? [])).catch(() => setEarned([]));
+  }, [me?.id]);
 
   const changePassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -113,6 +120,31 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">Manage user badges</span><span className="text-xs text-ink/60">Assign or revoke community badges</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>}
+      </section>
+
+      <section className="card space-y-4 p-4 sm:p-5" aria-labelledby="badges-heading">
+        <div>
+          <h2 id="badges-heading" className="font-display text-lg font-bold">Badges &amp; Achievements</h2>
+          <p className="mt-1 text-xs text-ink/60">Badges appear on your storefront. Misusing or gaming them can lead to removal (see Terms, section 10).</p>
+        </div>
+        <ul className="divide-y divide-line">
+          {BADGES.map((badge) => {
+            const has = earned.includes(badge.key);
+            return (
+              <li key={badge.key} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${has ? "border-ink bg-ink text-[var(--surface)]" : "border-line text-ink/60"}`}>{badge.icon}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-sm font-semibold">{badge.label}</h3>
+                    {has && <span className="rounded-full border border-brand/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">Earned</span>}
+                  </div>
+                  <p className="mt-0.5 text-xs text-ink/70">{badge.description}</p>
+                  <p className="mt-1 text-xs text-ink/55"><span className="font-semibold text-ink/70">To earn: </span>{badge.criteria}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <form onSubmit={saveContacts} className="card space-y-3 p-4 sm:p-5">

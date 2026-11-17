@@ -32,6 +32,13 @@ export default function CampusAdCarousel() {
     return () => window.clearInterval(refresh);
   }, []);
 
+  useEffect(() => {
+    ads.forEach((ad) => {
+      const img = new Image();
+      img.src = mediaUrl(ad.image_url);
+    });
+  }, [ads]);
+
   const activeAds = ads.filter((ad) => Date.parse(ad.expires_at) > now);
   const count = activeAds.length;
   const currentIndex = count ? active % count : 0;
@@ -53,14 +60,12 @@ export default function CampusAdCarousel() {
   }
 
   const show = (index: number) => setActive((index + count) % count);
-  const ad = activeAds[currentIndex];
   const swipe = (delta: number) => {
     if (Math.abs(delta) <= 40) return;
     show(currentIndex + (delta < 0 ? 1 : -1));
     suppressClick.current = true;
     window.setTimeout(() => { suppressClick.current = false; }, 0);
   };
-  const image = <img src={mediaUrl(ad.image_url)} alt={ad.alt_text} className="relative h-full w-full object-contain" />;
   return (
     <section aria-label="Campus flyers" className="animate-rise">
       <div className="mb-3 flex items-end justify-between gap-3">
@@ -97,23 +102,26 @@ export default function CampusAdCarousel() {
           event.stopPropagation();
         }}
       >
-        <div key={ad.id} className="ad-slide absolute inset-0">
-          {/* Blurred copy fills the sides so tall flyers never leave empty bars */}
-          <img src={mediaUrl(ad.image_url)} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-2xl" />
-          {ad.link_url
-            ? <a href={ad.link_url} target="_blank" rel="noopener noreferrer" aria-label={`${ad.alt_text} (opens link in a new tab)`} className="relative block h-full w-full">
-              {image}
-              <span aria-hidden="true" className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-white/30 bg-black/45 text-white shadow-sm backdrop-blur-md">
-                <ExternalLink size={17} strokeWidth={2.2} />
-              </span>
-            </a>
-            : image}
-        </div>
+        {activeAds.map((item, index) => {
+          const isActive = index === currentIndex;
+          const picture = <img src={mediaUrl(item.image_url)} alt={item.alt_text} loading="eager" decoding="async" draggable={false} className="relative h-full w-full object-contain" />;
+          return (
+            <div key={item.id} aria-hidden={!isActive} className={`ad-slide absolute inset-0 ${isActive ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}>
+              <img src={mediaUrl(item.image_url)} alt="" aria-hidden="true" draggable={false} className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-2xl" />
+              {item.link_url
+                ? <a href={item.link_url} tabIndex={isActive ? 0 : -1} target="_blank" rel="noopener noreferrer" aria-label={`${item.alt_text} (opens link in a new tab)`} className="relative block h-full w-full">
+                  {picture}
+                  <span aria-hidden="true" className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-white"><ExternalLink size={17} strokeWidth={2.2} /></span>
+                </a>
+                : picture}
+            </div>
+          );
+        })}
         {count > 1 && <>
-          <button type="button" aria-label="Previous flyer" onClick={() => show(currentIndex - 1)} className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60 md:group-hover:grid"><ChevronLeft size={18} /></button>
-          <button type="button" aria-label="Next flyer" onClick={() => show(currentIndex + 1)} className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60 md:group-hover:grid"><ChevronRight size={18} /></button>
+          <button type="button" aria-label="Previous flyer" onClick={() => show(currentIndex - 1)} className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 md:group-hover:grid"><ChevronLeft size={18} /></button>
+          <button type="button" aria-label="Next flyer" onClick={() => show(currentIndex + 1)} className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 md:group-hover:grid"><ChevronRight size={18} /></button>
           <div className="absolute inset-x-0 bottom-0 h-1 bg-black/15" aria-hidden="true">
-            <div key={`${ad.id}-${currentIndex}`} className="ad-progress h-full bg-brand" style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" }} />
+            <div key={`${activeAds[currentIndex].id}-${currentIndex}`} className="ad-progress h-full bg-brand" style={{ animationDuration: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" }} />
           </div>
         </>}
       </div>

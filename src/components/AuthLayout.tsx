@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <aside className="auth-art relative hidden overflow-hidden rounded-[2rem] p-8 text-white sm:p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
           <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full border-[3rem] border-white/10" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rotate-12 rounded-[35%] border-[2rem] border-[#e9ba4f]/30" />
-          <Link to="/" className="relative z-10 inline-flex w-fit items-center gap-3 rounded-full border border-white/20 bg-white/10 p-2 pr-5 backdrop-blur transition hover:bg-white/15">
+          <Link to="/" className="relative z-10 inline-flex w-fit items-center gap-3 rounded-full border border-white/20 bg-white/10 p-2 pr-5 transition hover:bg-white/15">
             <img src={LOGO_URL} alt="" className="h-10 w-10 rounded-full bg-white object-contain p-1" />
             <span className="font-display text-lg font-bold tracking-tight">KNUST Mart</span>
           </Link>

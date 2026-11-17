@@ -62,7 +62,44 @@ const clauses = [
     ],
   },
   {
-    title: "9. Governing law and contact",
+    title: "9. Prohibited and restricted items",
+    paragraphs: [
+      "You may not list, advertise, or sell: illegal drugs or drug paraphernalia, alcohol or tobacco, weapons or anything designed to cause harm, stolen or counterfeit goods, prescription medicines, exam papers, leaked assessments or completed coursework offered for submission, accounts or login details, adult content, or any item or service that breaches Ghanaian law or KNUST regulations.",
+      "Services must be lawful and honestly described. We may remove any listing we reasonably believe breaches this section, with or without notice, and may restrict or close the account behind it.",
+    ],
+  },
+  {
+    title: "10. Badges and achievements",
+    paragraphs: [
+      "Badges show a seller's record on KNUST Mart. Most are awarded automatically when the criteria listed in Settings are met; Campus Legend is assigned by KNUST Mart admins at their discretion and cannot be applied for.",
+      "You must not buy, sell, trade, or fake badges, create extra accounts to qualify for them, arrange fake orders or reviews, or pressure buyers for ratings. We may withhold, suspend, or revoke any badge, including an automatically earned one, if we find it was obtained through misconduct, if the criteria are no longer met, or if the account is subject to unresolved disputes, a report, or enforcement action. Revoking a badge does not by itself limit other rights under these Terms.",
+    ],
+  },
+  {
+    title: "11. Pickup, delivery, and meeting safety",
+    paragraphs: [
+      "Arrange handovers in busy, well-lit public campus places such as the library, the Student Union Building, or a hall entrance. Avoid meeting alone in isolated areas or late at night, tell a friend where you are going, and bring someone along for high-value items.",
+      "Inspect the item before accepting it and before sharing your handover code. Do not pay or hand over goods outside the agreed order flow if you are unsure. If you feel unsafe, leave, and report the user and contact campus security or the police where appropriate.",
+      "Couriers and sellers must carry out handovers honestly and may not open, swap, or tamper with items. Users are responsible for their own safety and conduct when meeting. KNUST Mart does not supervise meetups or deliveries in person.",
+    ],
+  },
+  {
+    title: "12. Disputes between buyers and sellers",
+    paragraphs: [
+      "If something goes wrong with an order, first try to resolve it directly and politely through the order chat. If that fails, report the order through the app as soon as possible, with accurate details and any photos or messages that support your account.",
+      "We may review the order record, messages, and reports, ask both sides for information, and take reasonable steps such as marking an order as disputed, limiting features, or removing listings or badges. KNUST Mart acts as a facilitator: we are not obliged to resolve every dispute, we do not guarantee any outcome or refund, and our decisions on platform actions do not replace your legal rights. Users remain free to seek help from campus authorities or the courts.",
+      "Do not use threats, harassment, or public shaming to settle a dispute, and do not post false reports or reviews.",
+    ],
+  },
+  {
+    title: "13. Limits on our responsibility",
+    paragraphs: [
+      "To the extent the law allows, KNUST Mart is not liable for the quality, safety, legality, or delivery of items and services sold by users, for loss or injury arising from meetings or deliveries between users, for badges or ratings given by others, or for losses caused by events outside our reasonable control such as network outages, payment-provider downtime, or power failures.",
+      "Where liability cannot be excluded, it is limited to the extent the law permits. Nothing in these Terms limits liability for fraud, death, or personal injury caused by our own negligence, or any rights you have that cannot be waived.",
+    ],
+  },
+  {
+    title: "14. Governing law and contact",
     paragraphs: [
       "These Terms are intended to be governed by the laws of Ghana, subject to any mandatory legal protections that apply to you. Disputes are subject to the jurisdiction of competent courts in Ghana.",
       "These Terms are a product-use agreement, not legal advice or a guarantee against loss, fraud, or legal claims. Have a qualified Ghanaian lawyer review them before relying on them as a final legal document.",
@@ -96,7 +133,7 @@ export default function Terms() {
           ))}
         </div>
         <p className="mt-9 border-t border-line pt-5 text-xs leading-5 text-ink/55">
-          Last updated 14 November 2026. This draft should receive qualified legal review before being treated as final legal advice.
+          Last updated 17 November 2026. This draft should receive qualified legal review before being treated as final legal advice.
         </p>
       </article>
     </main>
