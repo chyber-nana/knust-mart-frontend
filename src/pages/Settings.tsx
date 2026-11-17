@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, Building2, FileText, KeyRound, LogOut, Truck } from "lucide-react";
+import { Award, Building2, FileText, KeyRound, LogOut, Truck, Users } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import { BADGES } from "../components/badgeCatalog";
@@ -118,6 +118,11 @@ export default function Settings() {
         {me?.is_admin && <Link to="/admin/badges" className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Award size={19} className="text-gold" />
           <span className="flex-1"><span className="block text-sm font-semibold">Manage user badges</span><span className="text-xs text-ink/60">Assign or revoke community badges</span></span>
+          <span aria-hidden="true" className="text-ink/40">›</span>
+        </Link>}
+        {me?.is_admin && <Link to="/admin/users" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+          <Users size={19} className="text-brand" />
+          <span className="flex-1"><span className="block text-sm font-semibold">Manage accounts</span><span className="text-xs text-ink/60">Anonymize accounts while retaining marketplace history</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>}
       </section>

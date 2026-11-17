@@ -12,6 +12,7 @@ import Appeals from "./pages/Appeals";
 import AdminAppeals from "./pages/AdminAppeals";
 import AdminAds from "./pages/AdminAds";
 import AdminBadges from "./pages/AdminBadges";
+import AdminUsers from "./pages/AdminUsers";
 import Inbox from "./pages/Inbox";
 import Chat from "./pages/Chat";
 import ReviewOrder from "./pages/ReviewOrder";
@@ -186,6 +187,7 @@ export default function App() {
           <Route path="/admin/appeals" element={<AdminAppeals />} />
           <Route path="/admin/ads" element={<AdminAds />} />
           <Route path="/admin/badges" element={<AdminBadges />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/sell" element={<Sell />} />
           <Route path="/store/create" element={<CreateBusiness />} />
           <Route path="/store/activated" element={<StoreActivated />} />
