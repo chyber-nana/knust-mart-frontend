@@ -1,7 +1,8 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, ChatMessage } from "../api";
 import { useAuth } from "../auth";
+import { useRealtime } from "../realtime";
 
 interface ThreadData {
   product: { id: string; title: string };
@@ -15,7 +16,7 @@ export default function Chat() {
   const [thread, setThread] = useState<ThreadData | null>(null);
   const [draft, setDraft] = useState("");
   const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -23,21 +24,43 @@ export default function Chat() {
       setErr("");
     } catch (x) { setErr((x as Error).message); }
   }, [productId, counterpartId]);
-  useEffect(() => { load(); const timer = window.setInterval(load, 4000); return () => window.clearInterval(timer); }, [load]);
+  const markRead = useCallback(() => {
+    api(`/messages/${productId}/${counterpartId}/read`, { method: "POST" })
+      .then(() => window.dispatchEvent(new Event("messages:read")))
+      .catch(() => undefined);
+  }, [productId, counterpartId]);
+  useEffect(() => { void load().then(() => window.dispatchEvent(new Event("messages:read"))); }, [load]);
+  useEffect(() => {
+    const box = boxRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [thread?.messages.length]);
+  useRealtime((event) => {
+    if (event.type !== "message") return;
+    const incoming = event.message;
+    if (incoming.product_id !== productId) return;
+    const other = incoming.sender_id === me?.id ? incoming.receiver_id : incoming.sender_id;
+    if (other !== counterpartId) return;
+    if (incoming.sender_id !== me?.id) markRead();
+    setThread((current) => {
+      if (!current || current.messages.some((row) => row.id === incoming.id)) return current;
+      return { ...current, messages: [...current.messages, incoming] };
+    });
+  });
 
   const send = async (e: FormEvent) => {
     e.preventDefault();
     const message = draft.trim();
     if (!message) return;
-    setBusy(true);
+    setDraft("");
     setErr("");
     try {
-      await api("/messages", { method: "POST", body: { product_id: productId, receiver_id: counterpartId, message } });
-      setDraft("");
-      await load();
+      const sent = await api<ChatMessage>("/messages", { method: "POST", body: { product_id: productId, receiver_id: counterpartId, message } });
+      setThread((current) => current && !current.messages.some((row) => row.id === sent.id)
+        ? { ...current, messages: [...current.messages, sent] } : current);
     } catch (x) {
       setErr((x as Error).message);
-    } finally { setBusy(false); }
+      setDraft(message);
+    }
   };
 
   return (
@@ -56,7 +79,7 @@ export default function Chat() {
             <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => setDraft("Could we meet at the Student Union Building?")}>Suggest Student Union Building</button>
           </div>
         </div>
-        <div className="max-h-[55vh] min-h-48 space-y-3 overflow-y-auto p-4">
+        <div ref={boxRef} className="max-h-[55vh] min-h-48 space-y-3 overflow-y-auto p-4">
           {thread?.messages.map((message) => {
             const own = message.sender_id === me?.id;
             return <div key={message.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
@@ -71,7 +94,7 @@ export default function Chat() {
         {err && <p role="alert" className="border-t border-line px-4 py-2 text-sm text-red-700">{err}</p>}
         <form onSubmit={send} className="flex gap-2 border-t border-line p-3">
           <input className="input" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Write a message…" maxLength={2000} required />
-          <button className="btn-primary" disabled={busy || !draft.trim()}>{busy ? "Sending…" : "Send"}</button>
+          <button className="btn-primary" disabled={!draft.trim()}>Send</button>
         </form>
       </div>
     </div>

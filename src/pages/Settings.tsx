@@ -8,7 +8,7 @@ import PasswordChecklist, { isStrongPassword } from "../components/PasswordCheck
 import ThemeToggle from "../components/ThemeToggle";
 
 export default function Settings() {
-  const { me, logout } = useAuth();
+  const { me, logout, refresh } = useAuth();
   const [location, setLocation] = useState(me?.hostel_or_business_address ?? "");
   const [phone, setPhone] = useState(me?.phone_number ?? "");
   const [whatsapp, setWhatsapp] = useState(me?.whatsapp_number ?? "");
@@ -22,6 +22,8 @@ export default function Settings() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [earned, setEarned] = useState<string[]>([]);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (!me?.id) return;
@@ -120,9 +122,9 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">Manage user badges</span><span className="text-xs text-ink/60">Assign or revoke community badges</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>}
-        {me?.is_admin && <Link to="/admin/users" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+        {me?.is_admin && <Link to="/admin" className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Users size={19} className="text-brand" />
-          <span className="flex-1"><span className="block text-sm font-semibold">Manage accounts</span><span className="text-xs text-ink/60">Anonymize accounts while retaining marketplace history</span></span>
+          <span className="flex-1"><span className="block text-sm font-semibold">Admin dashboard</span><span className="text-xs text-ink/60">Users, businesses, bans, and suspensions</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>}
       </section>
@@ -172,6 +174,34 @@ export default function Settings() {
         {message && <p role="status" className="text-sm text-brand">{message}</p>}
         <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Updating…" : "Update password"}</button>
       </form>
+
+      {me?.store_active && (
+        <section className="card space-y-3 p-4 sm:p-5">
+          <h2 className="font-display text-lg font-bold">Delete business</h2>
+          <p className="text-xs text-ink/60">You can close your storefront only when you have no pending orders. Your personal account stays active.</p>
+          {deleteError && <p role="alert" className="text-sm text-red-700">{deleteError}</p>}
+          <button
+            type="button"
+            className="btn-danger"
+            disabled={deleteBusy}
+            onClick={async () => {
+              if (!window.confirm("Delete your business account? Listings will be taken down. This is blocked if you have a pending order.")) return;
+              setDeleteBusy(true);
+              setDeleteError("");
+              try {
+                await api("/stores/me", { method: "DELETE" });
+                await refresh();
+              } catch (cause) {
+                setDeleteError((cause as Error).message);
+              } finally {
+                setDeleteBusy(false);
+              }
+            }}
+          >
+            {deleteBusy ? "Deleting…" : "Delete business account"}
+          </button>
+        </section>
+      )}
 
       <button type="button" onClick={logout} className="btn-ghost w-full text-red-700"><LogOut size={17} />Sign out</button>
     </div>

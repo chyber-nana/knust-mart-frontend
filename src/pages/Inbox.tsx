@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, ChatThread } from "../api";
+import { useRealtime } from "../realtime";
 
 export default function Inbox() {
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -18,7 +19,14 @@ export default function Inbox() {
       setErr("");
     } catch (x) { setErr((x as Error).message); }
   }, []);
-  useEffect(() => { load(); const timer = window.setInterval(load, 5000); return () => window.clearInterval(timer); }, [load]);
+  useEffect(() => {
+    void load();
+    const refresh = () => { void load(); };
+    window.addEventListener("messages:read", refresh);
+    const timer = window.setInterval(refresh, 60000); // slow safety net; live updates arrive over the stream
+    return () => { window.removeEventListener("messages:read", refresh); window.clearInterval(timer); };
+  }, [load]);
+  useRealtime((event) => { if (event.type === "message") void load(); });
 
   return (
     <div>

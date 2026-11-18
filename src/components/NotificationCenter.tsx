@@ -3,6 +3,7 @@ import { Bell, Check, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth";
+import { useRealtime } from "../realtime";
 import { useToast } from "./Toast";
 
 interface NotificationItem {
@@ -65,13 +66,24 @@ export default function NotificationCenter() {
         if (active) setError((x as Error).message);
       }
     };
-    void load();
-    const timer = window.setInterval(load, 12000);
-    return () => {
-      active = false;
-      window.clearInterval(timer);
-    };
+        void load();
+    return () => { active = false; };
   }, [me?.id, location.pathname, toast]);
+
+  useRealtime((event) => {
+    if (event.type !== "notification") return;
+    const newest = event.item;
+    const orderPage = /^\/orders\/[^/]+$/.test(location.pathname);
+    const actionAlreadyVisible = (orderPage && ["order_requested", "order_delivered"].includes(newest.type))
+      || (location.pathname === "/courier" && ["order_delivered", "delivery_available"].includes(newest.type))
+      || (newest.type === "message_received" && newest.link === location.pathname);
+    if (!actionAlreadyVisible && lastSeenId.current !== null && newest.id > (lastSeenId.current ?? 0)) {
+      toast(newest.title, newest.body);
+    }
+    lastSeenId.current = Math.max(lastSeenId.current ?? 0, newest.id);
+    setItems((current) => [newest, ...current.filter((item) => item.id !== newest.id)].slice(0, 50));
+    if (!newest.read_at) setUnreadCount((count) => count + 1);
+  });
 
   useEffect(() => {
     const clickOutside = (event: MouseEvent) => {
