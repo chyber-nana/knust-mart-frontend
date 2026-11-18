@@ -6,6 +6,7 @@ import { useAuth } from "../auth";
 import { BADGES } from "../components/badgeCatalog";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
+import LocationPicker from "../components/LocationPicker";
 
 export default function Settings() {
   const { me, logout, refresh } = useAuth();
@@ -154,7 +155,7 @@ export default function Settings() {
 
       <form onSubmit={saveContacts} className="card space-y-3 p-4 sm:p-5">
         <div><h2 className="font-display text-lg font-bold">Seller contact details</h2><p className="mt-1 text-xs text-ink/60">Buyers can use these details from your storefront and product pages.</p></div>
-        <label className="block space-y-1 text-sm"><span className="font-medium">Pickup or business location</span><input className="input" placeholder="Hall, hostel, or pickup spot" maxLength={120} value={location} onChange={(event) => setLocation(event.target.value)} /><span className="block text-xs text-ink/55">This is shown to buyers choosing in-person pickup.</span></label>
+        <label className="block space-y-1 text-sm"><span className="font-medium">Pickup or business location</span><LocationPicker value={location} onChange={setLocation} placeholder="Choose a hall or hostel" /><span className="block text-xs text-ink/55">This is shown to buyers choosing in-person pickup.</span></label>
         <label className="block space-y-1 text-sm"><span className="font-medium">WhatsApp number</span><input className="input" type="tel" placeholder="+233…" maxLength={32} value={whatsapp} onChange={(event: ChangeEvent<HTMLInputElement>) => setWhatsapp(event.target.value)} /><span className="block text-xs text-ink/55">Include your country code.</span></label>
         {contactError && <p role="alert" className="text-sm text-red-700">{contactError}</p>}
         {contactMessage && <p role="status" className="text-sm text-brand">{contactMessage}</p>}

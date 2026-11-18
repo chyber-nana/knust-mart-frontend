@@ -39,7 +39,9 @@ export const canBuyerCancelDelivery = (delivery: Pick<Delivery, "role" | "status
     ? ["awaiting_seller", "pending", "accepted"].includes(delivery.status)
     : ["awaiting_seller", "ready_for_pickup"].includes(delivery.status));
 export interface Job { id: string; pickup: string; dropoff: string; fee: number; available_at: string | null; product_title: string }
-export const HALLS = ["Unity", "Independence", "Evandy", "Republic", "Queen Elizabeth II", "Africa", "Off-Campus Commercial Hub", "Main Library", "Student Union Building"];
+export const HALLS = ["Africa", "Republic", "Unity", "Katanga", "Queens", "Independence"];
+export const HOSTELS = ["Wilkado Hostel", "SRC Hostel", "Brunei Hostel", "GUSSS Hostel"];
+export const OFF_CAMPUS = "Off campus";
 
 export const mediaUrl = (u?: string | null) => (u ? (u.startsWith("http") ? u : BASE + u) : "");
 export const whatsappUrl = (number: string) => {

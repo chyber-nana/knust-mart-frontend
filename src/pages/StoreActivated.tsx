@@ -9,6 +9,8 @@ type State = "checking" | "active" | "flagged" | "timeout" | "error";
 export default function StoreActivated() {
   const [params] = useSearchParams();
   const reference = params.get("reference");
+  const promotion = params.get("purpose") === "promotion";
+const productId = params.get("product");
   const { refresh } = useAuth();
   const [state, setState] = useState<State>("checking");
   const [err, setErr] = useState("");
@@ -21,7 +23,7 @@ export default function StoreActivated() {
       for (let i = 0; i < 10 && alive; i++) {
         try {
           const result = await api<{ status: string; store_active: boolean }>(`/payments/verify/${encodeURIComponent(reference)}`);
-          if (result.store_active) { await refresh(); if (alive) setState("active"); return; }
+          if (promotion ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
           if (result.status === "flagged") { if (alive) setState("flagged"); return; }
         } catch (x) {
           if (alive) { setErr((x as Error).message); setState("error"); }
@@ -43,6 +45,12 @@ export default function StoreActivated() {
           <p className="mt-2 text-sm text-ink/65">This usually takes a few seconds. Please don’t close this page.</p>
         </>}
         {state === "active" && <>
+          {promotion ? <>
+  <h1 className="mt-4 font-display text-xl font-bold">Your listing is promoted</h1>
+  <p className="mt-2 text-sm text-ink/65">Payment received. It now appears at the top of the marketplace.</p>
+  <div className="mt-5 flex flex-col gap-2">
+    <Link to={productId ? `/products/${productId}` : "/"} className="btn-primary">View my listing</Link>
+  </div> </> : <>
           <CheckCircle2 className="mx-auto text-brand" size={42} aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">Your business is live 🎉</h1>
           <p className="mt-2 text-sm text-ink/65">Payment received. Add a logo and banner, then list your first product.</p>
@@ -50,7 +58,7 @@ export default function StoreActivated() {
             <Link to="/store/edit" className="btn-primary">Set up my storefront</Link>
             <Link to="/sell" className="btn-ghost">Add a product</Link>
           </div>
-        </>}
+        </>} </>}
         {state === "timeout" && <>
           <AlertTriangle className="mx-auto text-gold" size={36} aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">We haven’t seen your payment yet</h1>

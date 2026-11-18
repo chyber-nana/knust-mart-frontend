@@ -1,6 +1,8 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, Meta, mediaUrl, upload } from "../api";
+import LocationPicker from "../components/LocationPicker";
+import PhotoTiles from "../components/PhotoTiles";
 
 interface ProductData {
   id: string;
@@ -89,7 +91,7 @@ export default function ProductEdit() {
             <span className="text-xs font-normal text-ink/55">Units still available to order. Update this whenever you restock. At 0 the listing closes.</span>
           </label>
           <select className="input" value={form.condition} onChange={set("condition")} required><option value="">Condition</option>{meta?.conditions.map((condition) => <option key={condition}>{condition}</option>)}</select>
-          <select className="input" value={form.hall_location} onChange={set("hall_location")} required><option value="">Item location</option>{meta?.locations.map((location) => <option key={location}>{location}</option>)}</select>
+          <LocationPicker required value={form.hall_location} onChange={(v) => setForm((c) => ({ ...c, hall_location: v }))} placeholder="Item location" />
         </>}
         <div>
           <p className="mb-2 text-sm font-semibold">Listing photos</p>
@@ -98,9 +100,7 @@ export default function ProductEdit() {
               <img src={mediaUrl(url)} alt="" className="h-full w-full object-cover" />
               <button type="button" className="absolute right-1 top-1 rounded bg-white px-2 py-1 text-xs shadow" onClick={() => setImages(images.filter((item) => item !== url))}>Remove</button>
             </div>)}
-            {images.length < 5 && <label className="grid aspect-square cursor-pointer place-items-center rounded border border-dashed border-line text-sm text-ink/60">
-              Add photo<input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={addPhoto} disabled={busy} />
-            </label>}
+            {images.length < 5 && <PhotoTiles onChange={addPhoto} busy={busy} />}
           </div>
           {images.length === 0 && <p className="mt-1 text-xs text-red-700">Keep at least one photo on the listing.</p>}
         </div>

@@ -5,6 +5,7 @@ import { api } from "../api";
 import { useAuth } from "../auth";
 import { useToast } from "../components/Toast";
 import { CURRENT_TERMS_VERSION } from "../terms";
+import LocationPicker from "../components/LocationPicker";
 
 interface Activation { active: boolean; activation_type: string | null; free_slots_left: number; fee: number; currency: string }
 interface ActivateResult { status: "active" | "payment_required"; activation_type?: string; authorization_url?: string; reference?: string }
@@ -80,7 +81,7 @@ export default function CreateBusiness() {
         </label>
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Location <span className="font-normal text-ink/50">(optional)</span></span>
-          <input className="input" placeholder="Hostel or business location" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={120} />
+          <LocationPicker value={address} onChange={setAddress} placeholder="Choose a hall or hostel" />
         </label>
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Phone number</span>

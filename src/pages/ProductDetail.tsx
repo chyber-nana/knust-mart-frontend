@@ -34,15 +34,21 @@ export default function ProductDetail() {
     } catch (e) { setErr((e as Error).message); }
   };
   const promote = async () => {
-    if (!p || !meta) return;
-    setBusy(true); setErr(""); setActionMessage("");
-    try {
-      const result = await api<{ fee: number; payment_status: string; detail: string }>(`/products/${p.id}/promote`, { method: "POST" });
-      setP({ ...p, is_promoted: true });
-      setActionMessage(`Promoted for GH₵${result.fee}. ${result.detail}`);
-    } catch (e) { setErr((e as Error).message); }
-    finally { setBusy(false); }
-  };
+  if (!p || !meta) return;
+  setBusy(true); setErr(""); setActionMessage("");
+  let redirecting = false;
+  try {
+    const result = await api<{ status: "payment_required" | "promoted"; authorization_url?: string }>(`/products/${p.id}/promote`, { method: "POST" });
+    if (result.status === "payment_required" && result.authorization_url) {
+      redirecting = true;
+      window.location.assign(result.authorization_url);
+      return;
+    }
+    setP({ ...p, is_promoted: true });
+    setActionMessage("Your listing is now promoted.");
+  } catch (e) { setErr((e as Error).message); }
+  finally { if (!redirecting) setBusy(false); }
+};
   const remove = async () => {
     if (!p || !confirm("Delete this listing? Listings with delivery, chat, or review history cannot be deleted.")) return;
     setBusy(true); setErr("");
@@ -85,8 +91,8 @@ export default function ProductDetail() {
                 <option value="active">Active</option><option value="reserved">Reserved</option><option value="sold">Sold</option>
               </select>
             </label>
-            <p className="text-xs text-ink/60">{me?.user_type === "student" ? "Student" : "External vendor"} promotion rate: GH₵{meta?.fees[me!.user_type]?.promotion ?? "–"}. Payment is a stub and is not connected.</p>
-            <button className="btn-primary w-full" disabled={busy || p.is_promoted || p.status === "sold"} onClick={promote}>{p.is_promoted ? "Already promoted" : busy ? "Promoting…" : "Promote listing"}</button>
+            promotion: GH₵{meta?.fees[me!.user_type]?.promotion ?? "–"} one-time. You’ll pay securely with Paystack.
+            {p.is_promoted ? "Already promoted" : busy ? "One moment…" : `Promote for GH₵${meta?.fees[me!.user_type]?.promotion ?? ""}`}
             <button className="btn-danger w-full" disabled={busy} onClick={remove}>Delete listing</button>
             {actionMessage && <p role="status" className="text-sm text-brand">{actionMessage}</p>}
             {err && <p role="alert" className="text-sm text-red-700">{err}</p>}

@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { api, Card, mediaUrl, Meta } from "../api";
+import { api, Card, HALLS, HOSTELS, mediaUrl, Meta, OFF_CAMPUS } from "../api";
 import BusinessCard, { Business } from "../components/BusinessCard";
 import CampusAdCarousel from "../components/CampusAdCarousel";
 import ProductCard from "../components/ProductCard";
@@ -163,19 +163,15 @@ export default function Browse() {
                   <div><h2 className="font-display text-lg font-bold">Filters</h2></div>
                   <button type="button" className="grid h-8 w-8 place-items-center rounded-full hover:bg-paper" aria-label="Close filters" onClick={() => setFilterOpen(false)}><X size={17} /></button>
                 </div>
-                <FilterGroup label="Condition">
-                  {meta?.conditions.map((condition) => <FilterPill key={condition} active={filters.condition === condition} onClick={() => update("condition", filters.condition === condition ? "" : condition)}>{condition}</FilterPill>)}
-                </FilterGroup>
-                <FilterGroup label="Where">
-                  {meta?.locations.map((location) => <FilterPill key={location} active={filters.location === location} onClick={() => update("location", filters.location === location ? "" : location)}>{location}</FilterPill>)}
-                </FilterGroup>
-                <FilterGroup label="Seller">
-                  <FilterPill active={filters.sellers === "student"} onClick={() => update("sellers", filters.sellers === "student" ? "all" : "student")}>Student sellers</FilterPill>
-                </FilterGroup>
-                <FilterGroup label="Maximum price">
-                  {[50, 100, 250, 500].map((price) => <FilterPill key={price} active={filters.max_price === String(price)} onClick={() => update("max_price", filters.max_price === String(price) ? "" : String(price))}>GH₵{price}</FilterPill>)}
-                  <input aria-label="Custom maximum price" className="h-8 w-24 rounded-full border border-line px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand" type="number" min="0" placeholder="Custom…" value={filters.max_price && ![50, 100, 250, 500].includes(Number(filters.max_price)) ? filters.max_price : ""} onChange={change("max_price")} />
-                </FilterGroup>
+                <FilterGroup label="Halls">
+  {HALLS.map((location) => <FilterPill key={location} active={filters.location === location} onClick={() => update("location", filters.location === location ? "" : location)}>{location}</FilterPill>)}
+</FilterGroup>
+<FilterGroup label="Hostels">
+  {HOSTELS.map((location) => <FilterPill key={location} active={filters.location === location} onClick={() => update("location", filters.location === location ? "" : location)}>{location}</FilterPill>)}
+</FilterGroup>
+<FilterGroup label="Elsewhere">
+  <FilterPill active={filters.location === OFF_CAMPUS} onClick={() => update("location", filters.location === OFF_CAMPUS ? "" : OFF_CAMPUS)}>Off campus / other</FilterPill>
+</FilterGroup>
                 <div className="mt-4 flex justify-between border-t border-line pt-3">
                   <button type="button" className="text-sm font-semibold text-ink/60 hover:text-ink" onClick={() => setFilters((current) => ({ ...current, condition: "", location: "", max_price: "", sellers: "all" }))}>Clear filters</button>
                   <button type="button" className="btn-primary px-4 py-2" onClick={() => setFilterOpen(false)}>Show listings <ArrowRight size={15} /></button>

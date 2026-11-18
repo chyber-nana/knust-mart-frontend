@@ -1,9 +1,11 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BadgeCheck, ImagePlus, MapPin, X } from "lucide-react";
+import { BadgeCheck, MapPin, X } from "lucide-react";
 import { api, Meta, mediaUrl, upload } from "../api";
 import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
+import LocationPicker from "../components/LocationPicker";
+import PhotoTiles from "../components/PhotoTiles";
 
 const ITEM_STEPS = ["Photos", "Details", "Location & fees", "Preview"];
 
@@ -68,11 +70,7 @@ export default function Sell() {
                 <img src={mediaUrl(u)} alt="" className="h-full w-full object-cover" />
                 <button aria-label="Remove photo" className="absolute right-1 top-1 rounded bg-white p-0.5 shadow" onClick={() => setImages(images.filter((x) => x !== u))}><X size={14} /></button>
               </div>))}
-            {images.length < 5 && (
-              <label className="grid aspect-square cursor-pointer place-items-center rounded-md border border-dashed border-ink/30 text-xs text-ink/60 hover:bg-paper">
-                <span className="flex flex-col items-center gap-1"><ImagePlus size={20} />{busy ? "Uploading…" : "Add photo"}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={addFiles} disabled={busy} />
-              </label>)}
+{images.length < 5 && <PhotoTiles onChange={addFiles} busy={busy} />}
           </div>
           <p className="text-xs text-ink/60">Up to 5 photos, 3 MB each. Your first photo is the cover.</p>
         </>)}
@@ -86,7 +84,7 @@ export default function Sell() {
           {isService && fee && <FeePanel fee={fee} userType={me?.user_type} />}
         </>)}
         {step === 2 && !isPreview && meta && !isService && (<>
-          <select className="input" value={f.hall_location} onChange={set("hall_location")}><option value="">Where is the item?</option>{meta.locations.map((c) => <option key={c}>{c}</option>)}</select>
+          <LocationPicker value={f.hall_location} onChange={(v) => setF((c) => ({ ...c, hall_location: v }))} placeholder="Where is the item?" />
           {fee && <FeePanel fee={fee} userType={me?.user_type} />}
           <MeetupTip />
         </>)}
@@ -111,7 +109,7 @@ export default function Sell() {
                 </select>
                 {!isService ? <div className="grid grid-cols-2 gap-2">
                   <select aria-label="Item condition" className="min-w-0 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-ink/60 outline-none focus:border-brand" value={f.condition} onChange={set("condition")}><option value="">Condition</option>{meta.conditions.map((condition) => <option key={condition}>{condition}</option>)}</select>
-                  <select aria-label="Item location" className="min-w-0 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-ink/60 outline-none focus:border-brand" value={f.hall_location} onChange={set("hall_location")}><option value="">Location</option>{meta.locations.map((location) => <option key={location}>{location}</option>)}</select>
+                  <LocationPicker value={f.hall_location} onChange={(v) => setF((c) => ({ ...c, hall_location: v }))} placeholder="Location" selectClass="w-full min-w-0 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-ink/60 outline-none focus:border-brand" />
                 </div> : <p className="text-[11px] text-ink/50">Service</p>}
                 {me && <SellerBadge type={me.user_type} />}
                 <label className="block border-t border-line pt-2">

@@ -4,6 +4,7 @@ import { MapPin, X } from "lucide-react";
 import { api, Card, mediaUrl, Meta } from "../api";
 import { useAuth } from "../auth";
 import { useToast } from "./Toast";
+import LocationPicker from "./LocationPicker";
 
 type OrderProduct = Card & { images?: string[]; status?: string };
 
@@ -91,12 +92,10 @@ export default function OrderModal({
                   <button type="button" aria-pressed={fulfillment === "pickup"} onClick={() => setFulfillment("pickup")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "pickup" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Pickup · Free</button>
                 </div>
                 {fulfillment === "courier" ? (
-                  <label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2">
-                    <MapPin size={17} className="shrink-0 text-brand" />
-                    <select aria-label="Delivery hall or location" className="min-w-0 flex-1 bg-transparent py-1 text-sm outline-none" value={location} onChange={(event) => setLocation(event.target.value)}>
-                      <option value="">Choose your delivery hall or hub</option>{meta?.locations.map((item) => <option key={item}>{item}</option>)}
-                    </select>
-                  </label>
+<div className="flex items-start gap-2 rounded-xl border border-line bg-white px-3 py-2">
+  <MapPin size={17} className="mt-2 shrink-0 text-brand" />
+  <div className="min-w-0 flex-1"><LocationPicker value={location} onChange={setLocation} placeholder="Choose your hall or hostel" selectClass="w-full bg-transparent py-1 text-sm outline-none" inputClass="w-full border-t border-line bg-transparent py-1 text-sm outline-none" /></div>
+</div>
                 ) : (
                   <p className="rounded-xl border border-line bg-white px-3 py-3 text-sm">
                     <span className="block text-xs font-semibold uppercase tracking-wide text-ink/50">Pickup location</span>
