@@ -16,6 +16,7 @@ export default function CreateBusiness() {
   const [info, setInfo] = useState<Activation | null>(null);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [businessTermsAccepted, setBusinessTermsAccepted] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,6 +35,7 @@ export default function CreateBusiness() {
         body: {
           store_name: name.trim(),
           hostel_or_business_address: address.trim() || null,
+          phone_number: phone.trim(),
           business_terms_accepted: businessTermsAccepted,
           business_terms_version: CURRENT_TERMS_VERSION,
         },
@@ -79,6 +81,11 @@ export default function CreateBusiness() {
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Location <span className="font-normal text-ink/50">(optional)</span></span>
           <input className="input" placeholder="Hostel or business location" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={120} />
+        </label>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-semibold">Phone number</span>
+          <input className="input" type="tel" autoComplete="tel" placeholder="+233…" value={phone} onChange={(e) => setPhone(e.target.value)} pattern="\+?[0-9][0-9 ()\-]{5,30}" maxLength={32} required />
+          <span className="block text-xs text-ink/55">Buyers and couriers use this to reach your business. Include your country code.</span>
         </label>
         {!free && info && <p className="text-xs text-ink/60">You’ll pay securely with Paystack. Your storefront goes live as soon as the payment is confirmed.</p>}
         {err && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{err}</p>}
