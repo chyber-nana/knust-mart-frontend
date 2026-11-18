@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { api } from "../api";
 import AuthLayout from "../components/AuthLayout";
 import OutlookNotice from "../components/OutlookNotice";
+import StudentEmailPopup from "../components/StudentEmailPopup";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import { useToast } from "../components/Toast";
 import { CURRENT_TERMS_VERSION } from "../terms";
@@ -67,6 +68,7 @@ export default function Register() {
 
   return (
     <AuthLayout>
+      <StudentEmailPopup />
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold tracking-tight">Create your account</h1>
         <p className="mt-2 text-sm text-ink/65">Just an email and a password. Want to sell? You can open your business after you sign in.</p>
