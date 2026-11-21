@@ -27,6 +27,7 @@ export default function OrderModal({
   const [fulfillment, setFulfillment] = useState<"courier" | "pickup">("courier");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [compare, setCompare] = useState(false);
   const image = product.images?.[0] ?? product.image;
   const pickupLocation = product.seller.pickup_location || product.hall_location;
   const isMine = me?.id === product.seller.id;
@@ -55,6 +56,7 @@ export default function OrderModal({
           pickup_location: pickupLocation,
           dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,
+          choose_courier: fulfillment === "courier" && compare,
         },
       });
       notify("Order requested", `${product.title} was added to your orders.`);
@@ -104,6 +106,8 @@ export default function OrderModal({
                   </p>
                 )}
                 {fulfillment === "courier" && location && !CAMPUS_NAMES.includes(location.trim().toLowerCase()) && <p role="note" className="rounded-xl bg-[#f0eadc] px-3 py-2.5 text-xs leading-5 text-ink/75">Couriers only deliver between campus halls and hostels. For anywhere else, choose Pickup instead.</p>}
+                {fulfillment === "courier" && <label className="flex items-center gap-2 text-xs text-ink/65"><input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />Let me compare courier prices (optional)</label>}
+                <p role="note" className="rounded-xl bg-[#e6ebdf] px-3 py-2.5 text-xs leading-5 text-ink/75">{fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item GH₵${product.price.toFixed(2)} + delivery GH₵${(meta?.delivery_fee ?? 5).toFixed(2)}), by MoMo or cash.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect the item.`} KNUST Mart does not take product payments. Only pay once the item is in your hand.</p>
                 <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && (!location || !CAMPUS_NAMES.includes(location.trim().toLowerCase()))) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}

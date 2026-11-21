@@ -10,12 +10,9 @@ export const queueTour = () => { try { localStorage.setItem(PENDING_KEY, "1"); }
 interface Step { target: string; title: string; body: string; route?: (id: string) => string }
 
 const STEPS: Step[] = [
-  { target: "courier", title: "Become a courier", body: "Verified students can earn by delivering around campus. Tap here to join, turn on courier mode and accept jobs." },
-  { target: "mystore", title: "Your storefront", body: "This is your public page where your listings appear.", route: (id) => `/vendors/${id}` },
-  { target: "add-product", title: "Add a product or service", body: "Tap here, choose Product or Service, add photos and publish.", route: (id) => `/vendors/${id}` },
-  { target: "settings", title: "Settings", body: "Your account, guides and business setup live here." },
-  { target: "create-business", title: "Create a business account", body: "Open a storefront to sell. The first launch spots are free.", route: () => "/settings" },
-  { target: "guides", title: "Step-by-step guides", body: "Open any guide for adding products, becoming a courier and how deliveries work. You can replay this tour any time.", route: () => "/settings" },
+  { target: "mystore", title: "Your store", body: "This is your public page where your listings appear.", route: (id) => `/vendors/${id}` },
+  { target: "add-product", title: "Add your first listing", body: "Tap here, choose Product or Service, add photos and publish.", route: (id) => `/vendors/${id}` },
+  { target: "orders", title: "Orders", body: "When someone orders, you’ll see it here. Hand over the item, get paid by MoMo or cash." },
 ];
 
 const visible = (target: string): HTMLElement | null => {

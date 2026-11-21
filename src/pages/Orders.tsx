@@ -63,7 +63,9 @@ export default function Orders() {
               </div>
               <StatusBadge status={d.status} /><ChevronRight size={16} />
             </Link>
-            {d.role === "buyer" && d.fulfillment_type === "courier" && d.status === "pending" && <CourierOffers deliveryId={d.id} onChosen={() => void load()} />}
+            {d.role === "buyer" && d.fulfillment_type === "courier" && d.status === "pending" && (d.choose_courier
+              ? <CourierOffers deliveryId={d.id} onChosen={() => void load()} />
+              : <p className="w-full rounded-2xl bg-[#e6ebdf] p-3 text-xs leading-5 text-ink/70">Finding you a courier at GH₵{Number(d.fee).toFixed(2)}. We’ll notify you when one accepts. <button type="button" className="font-semibold text-brand underline" onClick={() => api(`/deliveries/${d.id}/choose-mode`, { method: "POST" }).then(() => load()).catch(() => undefined)}>Compare courier prices instead</button></p>)}
             {d.role === "buyer" && d.status === "delivered" && <button type="button" disabled={d.reviewed} onClick={() => setReviewOrder(d)} className="text-sm font-semibold text-brand hover:underline disabled:cursor-default disabled:text-ink/40">{d.reviewed ? "Reviewed" : "Review seller"}</button>}
             {canBuyerCancelDelivery(d) && <button type="button" disabled={cancellingId === d.id} onClick={() => void cancelOrder(d)} className="text-sm font-semibold text-red-700 hover:underline disabled:opacity-50">{cancellingId === d.id ? "Cancelling…" : "Cancel order"}</button>}
           </li>

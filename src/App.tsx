@@ -115,7 +115,7 @@ function PublicLayout() {
           </Link>
           <div className="ml-auto flex items-center gap-2">
             {me && <NotificationCenter />}
-            <Link data-tour="courier" to={me ? "/courier" : "/login"} state={!me ? { from: "/courier" } : undefined} aria-label="Courier" title="Courier" className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 transition hover:text-brand ${location.pathname === "/courier" ? "text-brand" : "text-ink/70"}`}><Truck size={17} /></Link>
+            {me?.is_courier && <Link data-tour="courier" to="/courier" aria-label="Courier" title="Courier" className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 transition hover:text-brand ${location.pathname === "/courier" ? "text-brand" : "text-ink/70"}`}><Truck size={17} /></Link>}
             <ThemeToggle />
             {me?.is_admin && <Link to="/admin" className="hidden rounded-full px-3 py-2 text-xs font-semibold text-ink/60 transition hover:bg-white md:block">Admin</Link>}
             {me?.is_admin && <Link to="/admin" aria-label="Admin dashboard" title="Admin dashboard" className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white/80 text-ink/70 transition hover:text-brand md:hidden"><Shield size={16} /></Link>}
@@ -138,7 +138,7 @@ function PublicLayout() {
               <Link data-tour="mystore" to={`/vendors/${me.id}`} aria-label="My storefront" title="My storefront" className={navClass(`/vendors/${me.id}`)}><Building2 size={19} /><span>My store</span></Link>
             </div>
             <Link to="/inbox" className={navClass("/inbox")}><span className="relative"><MessageCircle size={19} /><InboxBadge /></span><span>Inbox</span></Link>
-            <Link to="/orders" className={navClass("/orders")}><PackageCheck size={19} /><span>Orders</span></Link>
+            <Link data-tour="orders" to="/orders" className={navClass("/orders")}><PackageCheck size={19} /><span>Orders</span></Link>
             <Link data-tour="settings" to="/settings" className={navClass("/settings")}><SettingsIcon size={19} /><span>Settings</span></Link>
           </> : <>
             <Link to="/login" className={navClass("/login")}><LogIn size={19} /><span>Sign in</span></Link>

@@ -164,6 +164,7 @@ export default function CourierBoard() {
             <button type="button" aria-label="Close delivery request" onClick={() => { setDismissedOfferId(offer.id); setOfferId(null); }} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white"><X size={17} /></button>
           </div>
           <p className="mt-4 rounded-xl border border-line bg-white p-3 text-sm font-medium">{offer.pickup} <span className="text-ink/35">→</span> {offer.dropoff}</p>
+          {offer.choose_courier && <>
           <div className="mt-4 rounded-2xl border border-line bg-white p-4">
             <div className="flex items-baseline justify-between"><span className="text-sm text-ink/65">Your price</span><b className="font-display text-3xl text-brand">GH₵{price.toFixed(2)}</b></div>
             <input type="range" aria-label="Your delivery price" min={offer.price_min} max={offer.price_max} step={0.5} value={price} onChange={(e) => setPrice(Number(e.target.value))} className="mt-3 h-2 w-full accent-brand" />
@@ -172,7 +173,8 @@ export default function CourierBoard() {
           </div>
           <button type="button" onClick={sendOffer} className="btn-primary mt-3 w-full">{offer.my_offer != null ? "Update my offer" : "Send offer"}</button>
           {offer.my_offer != null && <button type="button" onClick={withdrawOffer} className="mt-1 w-full py-2 text-xs font-semibold text-ink/55 hover:text-red-700">Withdraw my offer</button>}
-          {offer.fixed_accept_open && cooldown === 0 && <div className="mt-2 border-t border-line pt-3"><p className="mb-2 text-center text-[11px] text-ink/55">No offers yet. You can take it now at the standard GH₵{Number(offer.fee).toFixed(2)}.</p>
+          </>}
+          {offer.fixed_accept_open && cooldown === 0 && <div className="mt-2 border-t border-line pt-3"><p className="mb-2 text-center text-[11px] text-ink/55">{offer.choose_courier ? "No offers yet. You can take it now at the standard" : "Standard price"} GH₵{Number(offer.fee).toFixed(2)}{offer.choose_courier ? "." : ", paid to you in person by the buyer."}</p>
             <div className="fresh-offer-pulse rounded-2xl">
               <button
               type="button"
