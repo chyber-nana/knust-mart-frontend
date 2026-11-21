@@ -6,7 +6,7 @@ import SellerBadge from "../components/SellerBadge";
 import OrderModal from "../components/OrderModal";
 import { MessageCircle, Phone } from "lucide-react";
 
-interface Detail extends Card { description: string | null; images: string[]; status: string }
+interface Detail extends Card { description: string | null; images: string[]; status: string; colors?: string[]; sizes?: string[] }
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -71,6 +71,7 @@ export default function ProductDetail() {
       <div className="space-y-4 md:sticky md:top-24 md:self-start">
         <div><p className="mb-2 text-[10px] font-bold uppercase tracking-[.17em] text-gold">{p.category}{p.hall_location && <> <span className="px-1 text-ink/30">/</span> {p.hall_location}</>}</p><h1 className="font-display text-3xl font-bold leading-tight tracking-[-.03em] sm:text-4xl">{p.title}</h1><p className="mt-3 font-display text-3xl font-bold text-brand">GH₵{p.price.toFixed(2)}</p>{p.stock != null && <p className={`mt-1 text-sm font-semibold ${p.stock > 0 ? "text-ink/60" : "text-red-700"}`}>{p.stock > 0 ? `${p.stock} in stock` : "Out of stock"}</p>}</div>
         {p.description && <p className="whitespace-pre-line text-sm leading-6 text-ink/70">{p.description}</p>}
+        {([["Colours", p.colors], ["Sizes", p.sizes]] as const).map(([label, list]) => list && list.length > 0 && <div key={label} className="flex flex-wrap items-center gap-1.5 text-sm"><span className="font-semibold">{label}:</span>{list.map((v) => <span key={v} className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs font-semibold">{v}</span>)}</div>)}
         <Link to={`/vendors/${p.seller.id}`} className="card flex items-center justify-between rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span><span className="block text-[10px] font-bold uppercase tracking-wide text-ink/45">Sold by</span><span className="mt-1 block text-sm font-semibold">{p.seller.name}</span></span><SellerBadge type={p.seller.user_type} /></Link>
         {(p.seller.phone_number || p.seller.whatsapp_number) && <div className="flex flex-wrap gap-2">
           {p.seller.phone_number && <a className="btn-ghost" href={`tel:${p.seller.phone_number}`}><Phone size={16} />Call seller</a>}

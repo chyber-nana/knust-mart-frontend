@@ -1,3 +1,4 @@
+import OptionChips, { COLOR_SUGGESTIONS, SIZE_SUGGESTIONS } from "../components/OptionChips";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BadgeCheck, MapPin, X } from "lucide-react";
@@ -23,6 +24,8 @@ export default function Sell() {
   const [cropSrc, setCropSrc] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [f, setF] = useState({ title: "", description: "", price: "", category: "", condition: "", hall_location: "", stock: "" });
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => { api<Meta>("/products/meta").then(setMeta).catch((e) => setErr(e.message)); }, []);
@@ -71,7 +74,7 @@ export default function Sell() {
 
   const publish = async () => {
     setBusy(true); setErr("");
-    try { const r = await api<{ id: string }>("/products", { method: "POST", body: { ...f, condition: isService ? null : f.condition, hall_location: isService ? null : f.hall_location, stock: isService ? null : Number(f.stock), price: Number(f.price), image_urls: images } }); nav(`/products/${r.id}`); }
+    try { const r = await api<{ id: string }>("/products", { method: "POST", body: { ...f, condition: isService ? null : f.condition, hall_location: isService ? null : f.hall_location, stock: isService ? null : Number(f.stock), price: Number(f.price), image_urls: images, colors: isService ? [] : colors, sizes: isService ? [] : sizes } }); nav(`/products/${r.id}`); }
     catch (x) { setErr((x as Error).message); setBusy(false); }
   };
   const fee = meta && me ? meta.fees[me.user_type] : null;
@@ -116,6 +119,10 @@ export default function Sell() {
           {!isService && <select className="input" value={f.category} onChange={set("category")}><option value="">Category</option>{productCategories.map((c) => <option key={c}>{c}</option>)}</select>}
           {!isService && <select className="input" value={f.condition} onChange={set("condition")}><option value="">Condition</option>{meta.conditions.map((c) => <option key={c}>{c}</option>)}</select>}
           {!isService && <input className="input" type="number" min="1" step="1" placeholder="Units in stock (you can change this later)" value={f.stock} onChange={set("stock")} />}
+          {!isService && <>
+          <OptionChips label="Colours available" hint="Optional. Tap what you have, or skip." value={colors} onChange={setColors} suggestions={COLOR_SUGGESTIONS} />
+          <OptionChips label="Sizes available" hint="Optional. Tap what you have, or skip." value={sizes} onChange={setSizes} suggestions={SIZE_SUGGESTIONS} />
+          </>}
           {isService && fee && <FeePanel fee={fee} userType={me?.user_type} />}
         </>)}
         {stepKey === "Location & fees" && meta && (<>

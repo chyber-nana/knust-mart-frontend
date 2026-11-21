@@ -1,3 +1,4 @@
+import OptionChips, { COLOR_SUGGESTIONS, SIZE_SUGGESTIONS } from "../components/OptionChips";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, Meta, mediaUrl, upload } from "../api";
@@ -13,6 +14,8 @@ interface ProductData {
   condition: string | null;
   hall_location: string | null;
   stock: number | null;
+  colors?: string[];
+  sizes?: string[];
   images: string[];
 }
 
@@ -22,6 +25,8 @@ export default function ProductEdit() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", description: "", price: "", category: "", condition: "", hall_location: "", stock: "" });
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const isService = form.category === "Services";
@@ -31,6 +36,8 @@ export default function ProductEdit() {
       .then(([product, details]) => {
         setMeta(details);
         setImages(product.images);
+        setColors(product.colors ?? []);
+        setSizes(product.sizes ?? []);
         setForm({
           title: product.title,
           description: product.description ?? "",
@@ -68,7 +75,7 @@ export default function ProductEdit() {
     try {
       await api(`/products/${id}`, {
         method: "PATCH",
-        body: { ...form, condition: isService ? null : form.condition, hall_location: isService ? null : form.hall_location, stock: isService ? null : Number(form.stock), price: Number(form.price), image_urls: images },
+        body: { ...form, condition: isService ? null : form.condition, hall_location: isService ? null : form.hall_location, stock: isService ? null : Number(form.stock), price: Number(form.price), image_urls: images, colors: isService ? [] : colors, sizes: isService ? [] : sizes },
       });
       nav(`/products/${id}`);
     } catch (x) {
@@ -91,6 +98,8 @@ export default function ProductEdit() {
             <span className="text-xs font-normal text-ink/55">Units still available to order. Update this whenever you restock. At 0 the listing closes.</span>
           </label>
           <select className="input" value={form.condition} onChange={set("condition")} required><option value="">Condition</option>{meta?.conditions.map((condition) => <option key={condition}>{condition}</option>)}</select>
+          <OptionChips label="Colours available" hint="Optional." value={colors} onChange={setColors} suggestions={COLOR_SUGGESTIONS} />
+          <OptionChips label="Sizes available" hint="Optional." value={sizes} onChange={setSizes} suggestions={SIZE_SUGGESTIONS} />
           <LocationPicker required value={form.hall_location} onChange={(v) => setForm((c) => ({ ...c, hall_location: v }))} placeholder="Item location" />
         </>}
         <div>
