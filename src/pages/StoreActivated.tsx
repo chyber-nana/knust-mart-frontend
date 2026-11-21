@@ -10,6 +10,7 @@ export default function StoreActivated() {
   const [params] = useSearchParams();
   const reference = params.get("reference");
   const promotion = params.get("purpose") === "promotion";
+const courier = params.get("purpose") === "courier";
 const productId = params.get("product");
   const { refresh } = useAuth();
   const [state, setState] = useState<State>("checking");
@@ -22,8 +23,8 @@ const productId = params.get("product");
       // The webhook can arrive a moment after the redirect, so check a few times.
       for (let i = 0; i < 10 && alive; i++) {
         try {
-          const result = await api<{ status: string; store_active: boolean }>(`/payments/verify/${encodeURIComponent(reference)}`);
-          if (promotion ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
+          const result = await api<{ status: string; store_active: boolean; courier_active?: boolean }>(`/payments/verify/${encodeURIComponent(reference)}`);
+          if (promotion || courier ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
           if (result.status === "flagged") { if (alive) setState("flagged"); return; }
         } catch (x) {
           if (alive) { setErr((x as Error).message); setState("error"); }
@@ -45,7 +46,11 @@ const productId = params.get("product");
           <p className="mt-2 text-sm text-ink/65">This usually takes a few seconds. Please don’t close this page.</p>
         </>}
         {state === "active" && <>
-          {promotion ? <>
+          {courier ? <>
+  <CheckCircle2 className="mx-auto text-brand" size={42} aria-hidden="true" />
+  <h1 className="mt-4 font-display text-xl font-bold">You’re a courier</h1>
+  <p className="mt-2 text-sm text-ink/65">Payment received. Courier mode is on and you can start accepting deliveries.</p>
+  <div className="mt-5 flex flex-col gap-2"><Link to="/courier" className="btn-primary">Open courier board</Link></div> </> : promotion ? <>
   <h1 className="mt-4 font-display text-xl font-bold">Your listing is promoted</h1>
   <p className="mt-2 text-sm text-ink/65">Payment received. It now appears at the top of the marketplace.</p>
   <div className="mt-5 flex flex-col gap-2">
@@ -65,7 +70,7 @@ const productId = params.get("product");
           <p className="mt-2 text-sm text-ink/65">If you were charged, your store will switch on automatically within a few minutes. If you cancelled, you can try again.</p>
           <div className="mt-5 flex flex-col gap-2">
             <button className="btn-primary" onClick={() => window.location.reload()}>Check again</button>
-            <Link to="/store/create" className="btn-ghost">Back to checkout</Link>
+            <Link to={courier ? "/courier" : "/store/create"} className="btn-ghost">{courier ? "Back to courier" : "Back to checkout"}</Link>
           </div>
         </>}
         {state === "flagged" && <>
@@ -78,7 +83,7 @@ const productId = params.get("product");
           <AlertTriangle className="mx-auto text-red-600" size={36} aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">Something went wrong</h1>
           <p role="alert" className="mt-2 text-sm text-red-700">{err}</p>
-          <Link to="/store/create" className="btn-ghost mt-5 inline-flex">Back to checkout</Link>
+          <Link to={courier ? "/courier" : "/store/create"} className="btn-ghost mt-5 inline-flex">{courier ? "Back to courier" : "Back to checkout"}</Link>
         </>}
       </div>
     </div>

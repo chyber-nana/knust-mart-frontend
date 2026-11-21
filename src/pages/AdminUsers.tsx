@@ -1,6 +1,6 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import { Building2, Megaphone, Search, Shield, Users } from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { Building2, Search, Shield, Users } from "lucide-react";
 import { api, mediaUrl } from "../api";
 import { useAuth } from "../auth";
 
@@ -183,18 +183,11 @@ export default function AdminUsers() {
     <div className="mx-auto max-w-5xl space-y-5">
       <header>
         <p className="text-[10px] font-bold uppercase tracking-[.17em] text-gold">Admin</p>
-        <h1 className="mt-1 font-display text-2xl font-bold">Campus dashboard</h1>
+        <h1 className="mt-1 font-display text-2xl font-bold">Users &amp; businesses</h1>
         <p className="mt-1 text-sm text-ink/60">
           Review every account and business, search by name or contact, then suspend, ban, restore, or anonymize.
         </p>
       </header>
-
-      <nav className="flex flex-wrap gap-2">
-        <Link to="/admin" className="btn-primary text-xs">Dashboard</Link>
-        <Link to="/admin/appeals" className="btn-ghost text-xs">Appeals</Link>
-        <Link to="/admin/ads" className="btn-ghost text-xs"><Megaphone size={14} />Flyers</Link>
-        <Link to="/admin/badges" className="btn-ghost text-xs">Badges</Link>
-      </nav>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Users" value={stats.users} icon={<Users size={18} />} />

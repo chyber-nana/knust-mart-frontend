@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUp, Banknote, History, Info, Truck, X } from "lucide-react";
+import { ArrowUp, Banknote, BadgeCheck, History, Info, Truck, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { api, Delivery, Job } from "../api";
 import { useAuth } from "../auth";
@@ -19,6 +19,19 @@ export default function CourierBoard() {
   const [cooldown, setCooldown] = useState(0);
   const touchStartY = useRef<number | null>(null);
   const acceptingOffer = useRef(false);
+  const [signup, setSignup] = useState<{ active: boolean; free_slots_left: number; fee: number } | null>(null);
+  const [joining, setJoining] = useState(false);
+  useEffect(() => {
+    if (me && !me.is_courier && me.is_verified_student) api<NonNullable<typeof signup>>("/deliveries/couriers/activation").then(setSignup).catch(() => {});
+  }, [me?.id, me?.is_courier, me?.is_verified_student]);
+  const join = async () => {
+    setErr(""); setJoining(true);
+    try {
+      const r = await api<{ status: string; authorization_url?: string }>("/deliveries/couriers/activate", { method: "POST" });
+      if (r.status === "payment_required" && r.authorization_url) { window.location.assign(r.authorization_url); return; }
+      await refresh();
+    } catch (e) { setErr((e as Error).message); } finally { setJoining(false); }
+  };
 
   const load = useCallback(async () => {
     if (!me?.is_courier) return;
@@ -78,7 +91,12 @@ export default function CourierBoard() {
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-[30%] bg-brand/10 text-brand"><Truck size={25} /></div>
         <h1 className="font-display text-2xl font-bold">Courier</h1>
         <p className="text-sm leading-6 text-ink/65">Verified students can accept campus delivery requests and earn the listed courier payout.</p>
-        {me.is_verified_student ? <button className="btn-primary w-full" onClick={() => act("/deliveries/couriers/toggle")}>Turn on courier mode</button>
+        {me.is_verified_student ? (me.courier_activated
+          ? <button className="btn-primary w-full" onClick={() => act("/deliveries/couriers/toggle")}>Turn on courier mode</button>
+          : <>
+            <div className="flex items-start gap-2.5 rounded-xl border border-brand/25 bg-brand/5 p-3.5 text-left text-sm"><BadgeCheck size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-brand" /><p>{signup && signup.free_slots_left > 0 ? <><span className="block font-semibold">Free for the first 5 couriers</span>{signup.free_slots_left} free {signup.free_slots_left === 1 ? "spot" : "spots"} left. After that, joining costs GH₵{signup.fee.toFixed(2)} once.</> : <><span className="block font-semibold">One-time registration: GH₵{(signup?.fee ?? 10).toFixed(2)}</span>Pay securely with Paystack, then start accepting deliveries.</>}</p></div>
+            <button className="btn-primary w-full" disabled={joining} onClick={join}>{joining ? "Please wait…" : signup && signup.free_slots_left > 0 ? "Become a courier (free)" : `Pay GH₵${(signup?.fee ?? 10).toFixed(2)} to become a courier`}</button>
+          </>)
           : <div role="note" className="flex items-start gap-2.5 rounded-xl border border-line bg-paper p-3.5 text-left text-sm text-ink/75"><Info size={17} aria-hidden="true" className="mt-0.5 shrink-0 text-brand" /><p><span className="block font-semibold text-ink">Courier mode is for verified students</span>Sign in with your @st.knust.edu.gh email and verify it to start taking deliveries.</p></div>}
         {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
       </section>

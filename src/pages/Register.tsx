@@ -1,3 +1,4 @@
+import WhatsAppChannelCard from "../components/WhatsAppChannelCard";
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
@@ -117,6 +118,7 @@ export default function Register() {
         {message && <p role="status" className="rounded-xl bg-brand/5 px-4 py-3 text-sm text-brand">{message}</p>}
         <button className="btn-primary w-full rounded-xl py-3.5 shadow-lg shadow-brand/15" disabled={busy}>{busy ? "Creating account…" : "Create account"}</button>
       </form>
+      <div className="mt-5"><WhatsAppChannelCard /></div>
       <p className="mt-6 text-center text-sm text-ink/65">Already registered? <Link to="/login" className="font-semibold text-brand hover:underline">Sign in</Link></p>
     </AuthLayout>
   );

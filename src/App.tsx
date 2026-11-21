@@ -13,6 +13,8 @@ import AdminAppeals from "./pages/AdminAppeals";
 import AdminAds from "./pages/AdminAds";
 import AdminBadges from "./pages/AdminBadges";
 import AdminUsers from "./pages/AdminUsers";
+import AdminShell from "./pages/AdminShell";
+import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
 import InboxBadge from "./components/InboxBadge";
 import Chat from "./pages/Chat";
@@ -186,11 +188,13 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/chat/:productId/:counterpartId" element={<Chat />} />
-          <Route path="/admin" element={<AdminUsers />} />
-          <Route path="/admin/appeals" element={<AdminAppeals />} />
-          <Route path="/admin/ads" element={<AdminAds />} />
-          <Route path="/admin/badges" element={<AdminBadges />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route element={<AdminShell />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/appeals" element={<AdminAppeals />} />
+            <Route path="/admin/ads" element={<AdminAds />} />
+            <Route path="/admin/badges" element={<AdminBadges />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+          </Route>
           <Route path="/sell" element={<Sell />} />
           <Route path="/store/create" element={<CreateBusiness />} />
           <Route path="/store/activated" element={<StoreActivated />} />

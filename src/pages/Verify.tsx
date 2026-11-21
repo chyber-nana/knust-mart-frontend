@@ -4,6 +4,7 @@ import { api } from "../api";
 import { useAuth } from "../auth";
 import OutlookNotice from "../components/OutlookNotice";
 import { useToast } from "../components/Toast";
+import WhatsAppChannelCard from "../components/WhatsAppChannelCard";
 
 export default function Verify() {
   const [params] = useSearchParams();
@@ -79,6 +80,7 @@ export default function Verify() {
     return <div className="mx-auto mt-16 max-w-sm px-4 text-center">
       <h1 className="font-display text-2xl font-bold text-brand">Confirming your email</h1>
       {!err && <p className="mt-3 text-sm text-ink/70">Please wait while we verify your address and sign you in.</p>}
+      {!err && <div className="mt-5"><WhatsAppChannelCard /></div>}
       {err && <p role="alert" className="mt-3 text-sm text-red-700">{err} <Link className="font-semibold text-brand" to="/login">Sign in</Link></p>}
     </div>;
   }
@@ -88,6 +90,7 @@ export default function Verify() {
       <h1 className="font-display text-2xl font-bold text-brand">Verify your student email</h1>
       <p className="mb-5 text-sm text-ink/70">Enter the 6-digit code we sent to your KNUST email. It expires in 10 minutes.</p>
       <div className="mb-4"><OutlookNotice showButton /></div>
+      <div className="mb-4"><WhatsAppChannelCard /></div>
       <form onSubmit={verify} className="card space-y-3 p-5">
         <input className="input" type="email" autoComplete="email" placeholder="KNUST email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input className="input text-center text-lg tracking-[0.4em]" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} required />

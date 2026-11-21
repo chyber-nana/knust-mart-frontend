@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { api } from "./api";
 
-export interface Me { id: string; full_name: string; user_type: string; is_courier: boolean; is_verified_student: boolean; is_admin: boolean; store_active: boolean; store_name: string | null; phone_number: string | null; whatsapp_number: string | null; hostel_or_business_address: string | null }
+export interface Me { id: string; full_name: string; user_type: string; is_courier: boolean; courier_activated?: boolean; is_verified_student: boolean; is_admin: boolean; store_active: boolean; store_name: string | null; phone_number: string | null; whatsapp_number: string | null; hostel_or_business_address: string | null }
 interface Ctx { me: Me | null; appealOnly: boolean; loading: boolean; login: (e: string, p: string) => Promise<boolean>; completeAuth: (token: string) => Promise<void>; logout: () => void; refresh: () => Promise<void> }
 const AuthCtx = createContext<Ctx>(null!);
 export const useAuth = () => useContext(AuthCtx);
