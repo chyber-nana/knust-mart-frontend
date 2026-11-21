@@ -33,7 +33,7 @@ export async function apiForm<T>(path: string, form: FormData, method = "POST"):
   return res.json();
 }
 
-export interface Delivery { id: string; role: "buyer" | "courier" | "seller"; status: string; fulfillment_type: "courier" | "pickup"; choose_courier?: boolean; options?: string; pickup: string; dropoff: string; fee: number; product_id?: string; product_title?: string; vendor_id?: string; vendor_name?: string; buyer_id?: string; reviewed?: boolean }
+export interface Delivery { id: string; role: "buyer" | "courier" | "seller"; status: string; fulfillment_type: "courier" | "pickup"; choose_courier?: boolean; options?: string; released?: boolean; dropoff_note?: string | null; seller_name?: string; seller_phone?: string | null; buyer_name?: string; buyer_phone?: string | null; pickup: string; dropoff: string; fee: number; product_id?: string; product_title?: string; vendor_id?: string; vendor_name?: string; buyer_id?: string; reviewed?: boolean }
 export const canBuyerCancelDelivery = (delivery: Pick<Delivery, "role" | "status" | "fulfillment_type">) =>
   delivery.role === "buyer" && (delivery.fulfillment_type === "courier"
     ? ["awaiting_seller", "pending", "accepted"].includes(delivery.status)

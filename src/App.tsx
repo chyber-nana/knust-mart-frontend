@@ -19,6 +19,7 @@ import AdminShell from "./pages/AdminShell";
 import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
 import InboxBadge from "./components/InboxBadge";
+import OrdersDot from "./components/OrdersDot";
 import Chat from "./pages/Chat";
 import ReviewOrder from "./pages/ReviewOrder";
 import Browse from "./pages/Browse";
@@ -138,7 +139,7 @@ function PublicLayout() {
               <Link data-tour="mystore" to={`/vendors/${me.id}`} aria-label="My storefront" title="My storefront" className={navClass(`/vendors/${me.id}`)}><Building2 size={19} /><span>My store</span></Link>
             </div>
             <Link to="/inbox" className={navClass("/inbox")}><span className="relative"><MessageCircle size={19} /><InboxBadge /></span><span>Inbox</span></Link>
-            <Link data-tour="orders" to="/orders" className={navClass("/orders")}><PackageCheck size={19} /><span>Orders</span></Link>
+            <Link data-tour="orders" to="/orders" className={navClass("/orders")}><span className="relative"><PackageCheck size={19} /><OrdersDot /></span><span>Orders</span></Link>
             <Link data-tour="settings" to="/settings" className={navClass("/settings")}><SettingsIcon size={19} /><span>Settings</span></Link>
           </> : <>
             <Link to="/login" className={navClass("/login")}><LogIn size={19} /><span>Sign in</span></Link>

@@ -28,6 +28,7 @@ export default function OrderModal({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [compare, setCompare] = useState(false);
+  const [note, setNote] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const image = product.images?.[0] ?? product.image;
@@ -60,6 +61,7 @@ export default function OrderModal({
           dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,
           choose_courier: fulfillment === "courier" && compare,
+          dropoff_note: fulfillment === "courier" && note.trim() ? note.trim() : undefined,
           color: color || undefined,
           size: size || undefined,
         },
@@ -112,6 +114,7 @@ export default function OrderModal({
                   </p>
                 )}
                 {fulfillment === "courier" && location && !CAMPUS_NAMES.includes(location.trim().toLowerCase()) && <p role="note" className="rounded-xl bg-[#f0eadc] px-3 py-2.5 text-xs leading-5 text-ink/75">Couriers only deliver between campus halls and hostels. For anywhere else, choose Pickup instead.</p>}
+                {fulfillment === "courier" && <input className="input py-2 text-sm" maxLength={120} placeholder="Room number or landmark (optional)" value={note} onChange={(e) => setNote(e.target.value)} />}
                 {fulfillment === "courier" && <label className="flex items-center gap-2 text-xs text-ink/65"><input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />Let me compare courier prices (optional)</label>}
                 <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && (!location || !CAMPUS_NAMES.includes(location.trim().toLowerCase()))) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}

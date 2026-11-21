@@ -6,6 +6,8 @@ import { api, canBuyerCancelDelivery } from "../api";
 import StatusBadge from "../components/StatusBadge";
 import { useToast } from "../components/Toast";
 import ReviewModal from "../components/ReviewModal";
+import { CallLink, NextStepCard, PlaceLink } from "../components/NextStep";
+import { useRealtime } from "../realtime";
 
 interface R {
   status: string;
@@ -22,6 +24,10 @@ interface R {
   qr_token: string | null;
   pin_code: string | null;
   reviewed?: boolean;
+  released?: boolean;
+  dropoff_note?: string | null;
+  courier_name?: string | null;
+  courier_phone?: string | null;
 }
 
 export default function Receipt() {
@@ -40,6 +46,11 @@ export default function Receipt() {
     setR(result);
   }).catch((e) => setErr(e.message)), [id, toast]);
   useEffect(() => { load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, [load]);
+  useRealtime(() => { void load(); });
+  const handedOver = async () => {
+    setBusy(true); setErr("");
+    try { await api(`/deliveries/${id}/release`, { method: "POST" }); await load(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
 
   const report = async () => {
     if (!confirm("Report this delivery as stolen? The courier's account will be suspended immediately.")) return;
@@ -94,6 +105,10 @@ export default function Receipt() {
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1>{r.options && <p className="mt-1 text-sm font-semibold text-ink/65">{r.options}</p>}<div className="mt-2"><StatusBadge status={r.status} /></div></div>
+      <NextStepCard info={{ role: r.role, status: r.status, fulfillment_type: r.fulfillment_type, released: r.released, pickup: r.pickup, dropoff: r.dropoff, dropoff_note: r.dropoff_note }} />
+      {r.fulfillment_type === "courier" && r.role === "seller" && r.status === "accepted" && !r.released && <button type="button" disabled={busy} onClick={() => void handedOver()} className="btn-primary mb-4 w-full">{busy ? "Confirming…" : "I handed it to the courier"}</button>}
+      {r.fulfillment_type === "courier" && r.courier_name && ["accepted", "in_transit"].includes(r.status) && <div className="card mb-4 flex flex-wrap items-center gap-2 rounded-2xl p-3"><span className="mr-auto text-sm font-semibold">Courier: {r.courier_name}</span><CallLink phone={r.courier_phone} label="Call courier" /></div>}
+      {r.fulfillment_type === "courier" && r.role === "buyer" && ["accepted", "in_transit"].includes(r.status) && <div className="mb-4"><PlaceLink place={r.dropoff} label="Show my drop-off on map" /></div>}
       <section className="card mb-4 rounded-2xl p-4">
         <h2 className="mb-4 text-sm font-semibold">Order progress</h2>
         <ol className="space-y-3">

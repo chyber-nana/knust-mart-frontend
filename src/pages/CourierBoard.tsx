@@ -5,6 +5,8 @@ import { api, Delivery, Job } from "../api";
 import { useAuth } from "../auth";
 import Scanner from "../components/Scanner";
 import StatusBadge from "../components/StatusBadge";
+import { CallLink, NextStepCard, PlaceLink } from "../components/NextStep";
+import { useRealtime } from "../realtime";
 
 export default function CourierBoard() {
   const { me, refresh } = useAuth();
@@ -59,6 +61,7 @@ export default function CourierBoard() {
     const timer = window.setInterval(load, 3000);
     return () => window.clearInterval(timer);
   }, [load, me?.is_courier]);
+  useRealtime(() => { if (me?.is_courier) void load(); });
 
   const offer = jobs.find((job) => job.id === offerId) ?? null;
   useEffect(() => { if (offer) setPrice(offer.my_offer ?? offer.price_max); }, [offer?.id]);
@@ -134,8 +137,13 @@ export default function CourierBoard() {
             <li key={d.id} className="rounded-2xl border border-line bg-white p-4">
               <div className="flex items-center justify-between gap-2"><p className="truncate font-semibold">{d.product_title || "Delivery"}{d.options ? ` (${d.options})` : ""}</p><StatusBadge status={d.status} /></div>
               <p className="mt-1 text-xs text-ink/60">{d.pickup} → {d.dropoff}</p>
+              <div className="mt-3"><NextStepCard info={{ role: "courier", status: d.status, fulfillment_type: d.fulfillment_type, released: d.released, pickup: d.pickup, dropoff: d.dropoff, dropoff_note: d.dropoff_note }} /></div>
+              <div className="flex flex-wrap gap-2">
+                {d.status === "accepted" && <><PlaceLink place={d.pickup} label="Directions to seller" /><CallLink phone={d.seller_phone} label={`Call ${d.seller_name ?? "seller"}`} /></>}
+                {d.status === "in_transit" && <><PlaceLink place={d.dropoff} label="Directions to buyer" /><CallLink phone={d.buyer_phone} label={`Call ${d.buyer_name ?? "buyer"}`} /></>}
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {d.status === "accepted" && <button className="btn-primary" onClick={() => void act(`/deliveries/${d.id}/pickup`, undefined, "Marked as picked up.")}>I picked it up</button>}
+                {d.status === "accepted" && <button className="btn-primary disabled:opacity-50" disabled={!d.released} onClick={() => void act(`/deliveries/${d.id}/pickup`, undefined, "Delivery started.")}>{d.released ? "I have it, start delivery" : "Waiting for seller to confirm…"}</button>}
                 {d.status === "in_transit" && <button className="btn-primary" onClick={() => setScanning(scanning === d.id ? null : d.id)}>Confirm handover</button>}
                 <button className="btn-danger" onClick={() => fail(d.id)}>Can't complete</button>
               </div>
