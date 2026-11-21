@@ -18,6 +18,7 @@ export default function CourierBoard() {
   const [dismissedOfferId, setDismissedOfferId] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const touchStartY = useRef<number | null>(null);
+  const [price, setPrice] = useState(5);
   const acceptingOffer = useRef(false);
   const [signup, setSignup] = useState<{ active: boolean; free_slots_left: number; fee: number } | null>(null);
   const [joining, setJoining] = useState(false);
@@ -60,6 +61,9 @@ export default function CourierBoard() {
   }, [load, me?.is_courier]);
 
   const offer = jobs.find((job) => job.id === offerId) ?? null;
+  useEffect(() => { if (offer) setPrice(offer.my_offer ?? offer.price_max); }, [offer?.id]);
+  const sendOffer = () => { if (offer) void act(`/deliveries/${offer.id}/offer`, { price }, `Offer of GH₵${price.toFixed(2)} sent. The buyer will choose a courier.`).then((ok) => { if (ok) setOfferId(null); }); };
+  const withdrawOffer = () => { if (offer) { setErr(""); api(`/deliveries/${offer.id}/offer`, { method: "DELETE" }).then(() => { setMsg("Offer withdrawn."); setOfferId(null); return load(); }).catch((e) => setErr((e as Error).message)); } };
   useEffect(() => {
     if (!offer?.available_at) { setCooldown(0); return; }
     const update = () => setCooldown(Math.max(0, Math.ceil((new Date(offer.available_at!).getTime() - Date.now()) / 1000)));
@@ -160,10 +164,16 @@ export default function CourierBoard() {
             <button type="button" aria-label="Close delivery request" onClick={() => { setDismissedOfferId(offer.id); setOfferId(null); }} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white"><X size={17} /></button>
           </div>
           <p className="mt-4 rounded-xl border border-line bg-white p-3 text-sm font-medium">{offer.pickup} <span className="text-ink/35">→</span> {offer.dropoff}</p>
-          <p className="mt-3 text-sm text-ink/65">Courier payout · <b className="text-ink">GH₵{Number(offer.fee).toFixed(2)}</b></p>
-          {cooldown > 0
-            ? <p role="status" className="mt-4 rounded-xl bg-[#f0eadc] p-3 text-center text-sm font-semibold text-gold">Accept available in {cooldown}s</p>
-            : <div className="fresh-offer-pulse mt-4 rounded-2xl">
+          <div className="mt-4 rounded-2xl border border-line bg-white p-4">
+            <div className="flex items-baseline justify-between"><span className="text-sm text-ink/65">Your price</span><b className="font-display text-3xl text-brand">GH₵{price.toFixed(2)}</b></div>
+            <input type="range" aria-label="Your delivery price" min={offer.price_min} max={offer.price_max} step={0.5} value={price} onChange={(e) => setPrice(Number(e.target.value))} className="mt-3 h-2 w-full accent-brand" />
+            <div className="mt-1 flex justify-between text-[11px] text-ink/50"><span>GH₵{offer.price_min}</span><span>GH₵{offer.price_max} max</span></div>
+            <p className="mt-2 text-[11px] leading-4 text-ink/55">{offer.open_offers} {offer.open_offers === 1 ? "offer" : "offers"} so far. The buyer picks a courier and pays you in person (cash or MoMo).</p>
+          </div>
+          <button type="button" onClick={sendOffer} className="btn-primary mt-3 w-full">{offer.my_offer != null ? "Update my offer" : "Send offer"}</button>
+          {offer.my_offer != null && <button type="button" onClick={withdrawOffer} className="mt-1 w-full py-2 text-xs font-semibold text-ink/55 hover:text-red-700">Withdraw my offer</button>}
+          {offer.fixed_accept_open && cooldown === 0 && <div className="mt-2 border-t border-line pt-3"><p className="mb-2 text-center text-[11px] text-ink/55">No offers yet. You can take it now at the standard GH₵{Number(offer.fee).toFixed(2)}.</p>
+            <div className="fresh-offer-pulse rounded-2xl">
               <button
               type="button"
               onTouchStart={(event) => { touchStartY.current = event.touches[0]?.clientY ?? null; }}
@@ -176,9 +186,9 @@ export default function CourierBoard() {
               className="flex min-h-16 w-full touch-pan-x flex-col items-center justify-center rounded-2xl bg-brand px-4 py-3 text-white shadow-sm transition hover:bg-brand/90 active:scale-[.99]"
             >
               <span className="flex items-center gap-2 font-semibold"><ArrowUp size={18} />Swipe up or tap to accept</span>
-              <span className="mt-1 text-[11px] text-white/75">Fresh request · tap or swipe up</span>
+              <span className="mt-1 text-[11px] text-white/75">Standard price · tap or swipe up</span>
               </button>
-            </div>}
+            </div></div>}
         </section>
       </div>}
     </div>

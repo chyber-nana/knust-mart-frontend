@@ -4,6 +4,7 @@ import { ChevronRight, PackageCheck } from "lucide-react";
 import { api, canBuyerCancelDelivery, Delivery } from "../api";
 import StatusBadge from "../components/StatusBadge";
 import ReviewModal from "../components/ReviewModal";
+import CourierOffers from "../components/CourierOffers";
 
 export default function Orders() {
   const [rows, setRows] = useState<Delivery[] | null>(null);
@@ -62,6 +63,7 @@ export default function Orders() {
               </div>
               <StatusBadge status={d.status} /><ChevronRight size={16} />
             </Link>
+            {d.role === "buyer" && d.fulfillment_type === "courier" && d.status === "pending" && <CourierOffers deliveryId={d.id} onChosen={() => void load()} />}
             {d.role === "buyer" && d.status === "delivered" && <button type="button" disabled={d.reviewed} onClick={() => setReviewOrder(d)} className="text-sm font-semibold text-brand hover:underline disabled:cursor-default disabled:text-ink/40">{d.reviewed ? "Reviewed" : "Review seller"}</button>}
             {canBuyerCancelDelivery(d) && <button type="button" disabled={cancellingId === d.id} onClick={() => void cancelOrder(d)} className="text-sm font-semibold text-red-700 hover:underline disabled:opacity-50">{cancellingId === d.id ? "Cancelling…" : "Cancel order"}</button>}
           </li>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, X } from "lucide-react";
-import { api, Card, mediaUrl, Meta } from "../api";
+import { api, Card, HALLS, HOSTELS, mediaUrl, Meta } from "../api";
 import { useAuth } from "../auth";
 import { useToast } from "./Toast";
 import LocationPicker from "./LocationPicker";
+const CAMPUS_NAMES = [...HALLS, ...HOSTELS, "Evandy", "Queen Elizabeth II", "Main Library", "Student Union Building"].map((n) => n.toLowerCase());
 
 type OrderProduct = Card & { images?: string[]; status?: string };
 
@@ -102,7 +103,8 @@ export default function OrderModal({
                     <span className="mt-1 flex items-center gap-2"><MapPin size={16} className="shrink-0 text-brand" />{pickupLocation || "Seller has not added a pickup location"}</span>
                   </p>
                 )}
-                <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && !location) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
+                {fulfillment === "courier" && location && !CAMPUS_NAMES.includes(location.trim().toLowerCase()) && <p role="note" className="rounded-xl bg-[#f0eadc] px-3 py-2.5 text-xs leading-5 text-ink/75">Couriers only deliver between campus halls and hostels. For anywhere else, choose Pickup instead.</p>}
+                <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && (!location || !CAMPUS_NAMES.includes(location.trim().toLowerCase()))) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
           {showProductLink && <Link to={`/products/${product.id}`} onClick={onClose} className="btn-ghost w-full">View product</Link>}

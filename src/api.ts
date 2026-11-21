@@ -38,7 +38,8 @@ export const canBuyerCancelDelivery = (delivery: Pick<Delivery, "role" | "status
   delivery.role === "buyer" && (delivery.fulfillment_type === "courier"
     ? ["awaiting_seller", "pending", "accepted"].includes(delivery.status)
     : ["awaiting_seller", "ready_for_pickup"].includes(delivery.status));
-export interface Job { id: string; pickup: string; dropoff: string; fee: number; available_at: string | null; product_title: string }
+export interface Job { id: string; pickup: string; dropoff: string; fee: number; price_min: number; price_max: number; my_offer: number | null; open_offers: number; fixed_accept_open: boolean; available_at: string | null; product_title: string }
+export interface CourierOffer { id: string; courier_name: string; price: number; completed: number; is_new: boolean; verified_student: boolean }
 export const HALLS = ["Africa", "Republic", "Unity", "Katanga", "Queens", "Independence"];
 export const HOSTELS = ["Wilkado Hostel", "SRC Hostel", "Brunei Hostel", "GUSSS Hostel"];
 export const OFF_CAMPUS = "Off campus";
