@@ -6,45 +6,68 @@ import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
 import LocationPicker from "../components/LocationPicker";
 import PhotoTiles from "../components/PhotoTiles";
+import ImageCropDialog from "../components/ImageCropDialog";
+import { KIND_LABEL, KindIcon, ListingKind, SERVICE_CATEGORY } from "../components/ListingKind";
 
-const ITEM_STEPS = ["Photos", "Details", "Location & fees", "Preview"];
+const PRODUCT_STEPS = ["Type", "Photos", "Details", "Location & fees", "Preview"];
+const SERVICE_STEPS = ["Type", "Photos", "Details", "Preview"];
+const KIND_COPY: Record<ListingKind, string> = { product: "Physical items: books, gadgets, clothing, room essentials.", service: "Something you do: tutoring, braiding, repairs, delivery." };
 
 export default function Sell() {
   const { me } = useAuth();
   const nav = useNavigate();
   const [meta, setMeta] = useState<Meta | null>(null);
   const [step, setStep] = useState(0);
+  const [kind, setKind] = useState<ListingKind | "">("");
+  const [queue, setQueue] = useState<File[]>([]);
+  const [cropSrc, setCropSrc] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [f, setF] = useState({ title: "", description: "", price: "", category: "", condition: "", hall_location: "", stock: "" });
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => { api<Meta>("/products/meta").then(setMeta).catch((e) => setErr(e.message)); }, []);
 
-  const addFiles = async (e: ChangeEvent<HTMLInputElement>) => {
+  // Picked photos are cropped/zoomed (and optionally enhanced) one at a time before upload.
+  useEffect(() => {
+    if (!queue[0]) { setCropSrc(""); return; }
+    const url = URL.createObjectURL(queue[0]);
+    setCropSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [queue]);
+  const addFiles = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, 5 - images.length);
+    e.target.value = ""; setErr("");
+    if (files.length) setQueue(files);
+  };
+  const uploadCropped = async (file: File) => {
     setBusy(true); setErr("");
-    try { const urls: string[] = []; for (const file of files) urls.push(await upload(file)); setImages((x) => [...x, ...urls]); }
-    catch (x) { setErr((x as Error).message); } finally { setBusy(false); e.target.value = ""; }
+    try { const url = await upload(file); setImages((x) => [...x, url].slice(0, 5)); setQueue((q) => q.slice(1)); }
+    catch (x) { setErr((x as Error).message); } finally { setBusy(false); }
+  };
+  const chooseKind = (k: ListingKind) => {
+    setKind(k);
+    setF((c) => k === "service"
+      ? { ...c, category: SERVICE_CATEGORY, condition: "", hall_location: "", stock: "" }
+      : { ...c, category: c.category === SERVICE_CATEGORY ? "" : c.category });
   };
   const set = (k: string) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
-    if (k === "category") {
-      setF((current) => ({ ...current, category: value, ...(value === "Services" ? { condition: "", hall_location: "", stock: "" } : {}) }));
-      if (step === ITEM_STEPS.length - 1 && value === "Services") setStep(ITEM_STEPS.length - 2);
-      return;
-    }
     setF((current) => ({ ...current, [k]: value }));
   };
-  const isService = f.category === "Services";
-  const steps = isService ? ["Photos", "Details", "Preview"] : ITEM_STEPS;
-  const isPreview = step === steps.length - 1;
-  const publishable = images.length > 0 && f.title.trim().length >= 3 && Number(f.price) > 0 &&
+  const isService = kind === "service";
+  const steps = isService ? SERVICE_STEPS : PRODUCT_STEPS;
+  const stepKey = steps[step];
+  const isPreview = stepKey === "Preview";
+  const productCategories = (meta?.categories ?? []).filter((c) => c !== SERVICE_CATEGORY);
+  const publishable = !!kind && images.length > 0 && f.title.trim().length >= 3 && Number(f.price) > 0 &&
     !!f.category && (isService || (!!f.condition && !!f.hall_location && Number(f.stock) >= 1));
-  const ok = step === 0
-    ? images.length > 0
-    : step === 1
-      ? f.title.trim().length >= 3 && Number(f.price) > 0 && !!f.category && (isService || (!!f.condition && Number(f.stock) >= 1))
-      : isPreview ? publishable : !!f.hall_location;
+  const ok = stepKey === "Type"
+    ? !!kind
+    : stepKey === "Photos"
+      ? images.length > 0
+      : stepKey === "Details"
+        ? f.title.trim().length >= 3 && Number(f.price) > 0 && !!f.category && (isService || (!!f.condition && Number(f.stock) >= 1))
+        : isPreview ? publishable : !!f.hall_location;
 
   const publish = async () => {
     setBusy(true); setErr("");
@@ -54,7 +77,7 @@ export default function Sell() {
   const fee = meta && me ? meta.fees[me.user_type] : null;
   if (me && me.user_type === "external" && !me.store_active) return <BusinessRequired />;
   return (
-    <div className="mx-auto max-w-xl">
+    <><div className="mx-auto max-w-xl">
       <div className="mb-5 flex items-start justify-between gap-3"><h1 className="font-display text-2xl font-bold sm:text-3xl">Create a listing</h1><div className="grid h-11 w-11 shrink-0 place-items-center rounded-[30%] bg-[#e6ebdf] font-display text-xl font-bold text-brand">{step + 1}</div></div>
       <div className="mb-4 flex gap-1.5" aria-label={`Step ${step + 1} of ${steps.length}`}>
         {steps.map((title, index) => <div key={title} className="flex-1">
@@ -63,7 +86,18 @@ export default function Sell() {
         </div>)}
       </div>
       <div className="card space-y-5 rounded-2xl p-4 sm:p-6">
-        {step === 0 && (<>
+        {stepKey === "Type" && (<fieldset>
+          <legend className="mb-3 text-sm font-semibold">What are you listing?</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(["product", "service"] as ListingKind[]).map((k) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => chooseKind(k)}
+              className={`rounded-2xl border p-4 text-left transition ${kind === k ? "border-brand bg-[#e6ebdf] ring-1 ring-brand" : "border-line bg-white hover:bg-paper"}`}>
+              <span className={`mb-3 grid h-11 w-11 place-items-center rounded-[30%] ${kind === k ? "bg-brand text-white" : "bg-[#e6ebdf] text-brand"}`}><KindIcon kind={k} size={22} /></span>
+              <span className="block font-display text-lg font-bold">{KIND_LABEL[k]}</span>
+              <span className="mt-1 block text-xs leading-5 text-ink/60">{KIND_COPY[k]}</span>
+            </button>)}
+          </div>
+        </fieldset>)}
+        {stepKey === "Photos" && (<>
           <div className="grid grid-cols-3 gap-2">
             {images.map((u) => (
               <div key={u} className="relative aspect-square overflow-hidden rounded-md border border-line">
@@ -72,18 +106,19 @@ export default function Sell() {
               </div>))}
 {images.length < 5 && <PhotoTiles onChange={addFiles} busy={busy} />}
           </div>
-          <p className="text-xs text-ink/60">Up to 5 photos, 3 MB each. Your first photo is the cover.</p>
+          <p className="text-xs text-ink/60">Up to 5 photos. You can crop, zoom and apply Free AI Enhance to each one. Your first photo is the cover.</p>
         </>)}
-        {step === 1 && meta && (<>
-          <input className="input" placeholder="Title, e.g. Engineering Mathematics 3 Textbook" value={f.title} onChange={set("title")} maxLength={120} />
-          <textarea className="input min-h-24" placeholder="Describe the item: edition, defects, what's included" value={f.description} onChange={set("description")} maxLength={2000} />
-          <input className="input" type="number" min="0" step="0.01" placeholder="Price (GH₵)" value={f.price} onChange={set("price")} />
-          <select className="input" value={f.category} onChange={set("category")}><option value="">Category</option>{meta.categories.map((c) => <option key={c}>{c}</option>)}</select>
+        {stepKey === "Details" && meta && (<>
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-[#e6ebdf] px-3 py-1 text-xs font-semibold text-brand"><KindIcon kind={kind || "product"} size={13} />{KIND_LABEL[kind || "product"]} listing</p>
+          <input className="input" placeholder={isService ? "Service name, e.g. Laptop repair & setup" : "Title, e.g. Engineering Mathematics 3 Textbook"} value={f.title} onChange={set("title")} maxLength={120} />
+          <textarea className="input min-h-24" placeholder={isService ? "Describe the service: what you offer, turnaround, how to book" : "Describe the item: edition, defects, what's included"} value={f.description} onChange={set("description")} maxLength={2000} />
+          <input className="input" type="number" min="0" step="0.01" placeholder={isService ? "Starting price (GH₵)" : "Price (GH₵)"} value={f.price} onChange={set("price")} />
+          {!isService && <select className="input" value={f.category} onChange={set("category")}><option value="">Category</option>{productCategories.map((c) => <option key={c}>{c}</option>)}</select>}
           {!isService && <select className="input" value={f.condition} onChange={set("condition")}><option value="">Condition</option>{meta.conditions.map((c) => <option key={c}>{c}</option>)}</select>}
           {!isService && <input className="input" type="number" min="1" step="1" placeholder="Units in stock (you can change this later)" value={f.stock} onChange={set("stock")} />}
           {isService && fee && <FeePanel fee={fee} userType={me?.user_type} />}
         </>)}
-        {step === 2 && !isPreview && meta && !isService && (<>
+        {stepKey === "Location & fees" && meta && (<>
           <LocationPicker value={f.hall_location} onChange={(v) => setF((c) => ({ ...c, hall_location: v }))} placeholder="Where is the item?" />
           {fee && <FeePanel fee={fee} userType={me?.user_type} />}
           <MeetupTip />
@@ -94,7 +129,8 @@ export default function Sell() {
             <article className="product-card group mx-auto w-full max-w-sm overflow-hidden rounded-[1.25rem] border border-line bg-white shadow-sm">
               <div className="relative aspect-[4/4.3] overflow-hidden bg-[#ebe9e2]">
                 {images[0] && <img src={mediaUrl(images[0])} alt={f.title || "Listing preview"} className="h-full w-full object-cover" />}
-                <button type="button" onClick={() => setStep(0)} className="absolute bottom-3 right-3 rounded-full border border-white/80 bg-white/95 px-3 py-1.5 text-xs font-semibold text-ink shadow-sm">Edit photos</button>
+                {kind && <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.1em] text-brand"><KindIcon kind={kind} size={12} />{KIND_LABEL[kind]}</span>}
+                <button type="button" onClick={() => setStep(1)} className="absolute bottom-3 right-3 rounded-full border border-white/80 bg-white/95 px-3 py-1.5 text-xs font-semibold text-ink shadow-sm">Edit photos</button>
               </div>
               <div className="space-y-2 p-3 sm:p-3.5">
                 <label className="block">
@@ -104,13 +140,13 @@ export default function Sell() {
                   </span>
                 </label>
                 <input aria-label="Listing title" className="w-full border-b border-transparent bg-transparent text-[13px] leading-5 text-ink/80 outline-none focus:border-brand" value={f.title} onChange={set("title")} maxLength={120} />
-                <select aria-label="Listing category" className="w-full border-b border-transparent bg-transparent text-[11px] text-gold outline-none focus:border-brand" value={f.category} onChange={set("category")}>
-                  {meta.categories.map((category) => <option key={category}>{category}</option>)}
+                <select aria-label="Listing category" disabled={isService} className="w-full border-b border-transparent bg-transparent text-[11px] text-gold outline-none focus:border-brand" value={f.category} onChange={set("category")}>
+                  {(isService ? [SERVICE_CATEGORY] : productCategories).map((category) => <option key={category}>{category}</option>)}
                 </select>
                 {!isService ? <div className="grid grid-cols-2 gap-2">
                   <select aria-label="Item condition" className="min-w-0 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-ink/60 outline-none focus:border-brand" value={f.condition} onChange={set("condition")}><option value="">Condition</option>{meta.conditions.map((condition) => <option key={condition}>{condition}</option>)}</select>
                   <LocationPicker value={f.hall_location} onChange={(v) => setF((c) => ({ ...c, hall_location: v }))} placeholder="Location" selectClass="w-full min-w-0 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-ink/60 outline-none focus:border-brand" />
-                </div> : <p className="text-[11px] text-ink/50">Service</p>}
+                </div> : <p className="flex items-center gap-1 text-[11px] text-ink/50"><KindIcon kind="service" size={12} />Service</p>}
                 {me && <SellerBadge type={me.user_type} />}
                 <label className="block border-t border-line pt-2">
                   <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-ink/45">Description</span>
@@ -129,6 +165,8 @@ export default function Sell() {
         </div>
       </div>
     </div>
+    {cropSrc && <ImageCropDialog src={cropSrc} title="product photo" aspect="product" enhanceable onCancel={() => setQueue((q) => q.slice(1))} onApply={uploadCropped} />}
+    </>
   );
 }
 

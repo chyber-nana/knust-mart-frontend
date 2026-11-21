@@ -5,6 +5,7 @@ import { api, Card, HALLS, HOSTELS, mediaUrl, Meta, OFF_CAMPUS } from "../api";
 import BusinessCard, { Business } from "../components/BusinessCard";
 import CampusAdCarousel from "../components/CampusAdCarousel";
 import ProductCard from "../components/ProductCard";
+import { KindIcon, ListingKind, SERVICE_CATEGORY } from "../components/ListingKind";
 import ProductQuickView from "../components/ProductQuickView";
 
 type Filters = { q: string; category: string; condition: string; location: string; max_price: string; sellers: "all" | "student" };
@@ -125,6 +126,8 @@ export default function Browse() {
     [...popular, ...trending].forEach((b) => { if (b.active_listings === 0) byId.set(b.id, b); });
     return [...byId.values()];
   }, [popular, trending]);
+  const productItems = useMemo(() => (products ?? []).filter((p) => p.category !== SERVICE_CATEGORY), [products]);
+  const serviceItems = useMemo(() => (products ?? []).filter((p) => p.category === SERVICE_CATEGORY), [products]);
   const hasSearch = filters.q.trim() !== "" || filters.category !== "" || activeFilters.length > 0;
   const update = (key: keyof Filters, value: string) => setFilters((current) => ({ ...current, [key]: value } as Filters));
   const change = (key: keyof Filters) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => update(key, event.target.value);
@@ -229,11 +232,8 @@ export default function Browse() {
         </div>
       </section>
 
-      <section className="animate-rise">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <SectionHeading title={filters.category || "Fresh finds"} />
-        </div>
-        {(err || productErr) && <p role="alert" className="mb-3 text-sm text-red-700">{productErr || err}</p>}
+      <div className="space-y-8">
+        {(err || productErr) && <p role="alert" className="text-sm text-red-700">{productErr || err}</p>}
         {products === null && !productErr ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{[1, 2, 3, 4].map((key) => <div key={key} className="h-64 animate-pulse rounded-[1.25rem] bg-line/50" />)}</div>
           : products?.length === 0 ? <div className="rounded-2xl border border-dashed border-line bg-white/70 px-4 py-10 text-center">
             {hasSearch ? <>
@@ -242,12 +242,15 @@ export default function Browse() {
               <button className="mt-4 text-sm font-semibold text-brand underline underline-offset-4" onClick={() => setFilters({ q: "", category: "", condition: "", location: "", max_price: "", sellers: "all" })}>Reset search</button>
             </> : <>
               <p className="font-display text-lg font-bold">No listings yet. Be the first to sell!</p>
-              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Books, gadgets, room essentials: whatever you no longer need, someone on campus does.</p>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Books, gadgets, services: whatever you can offer, someone on campus needs.</p>
               <Link to="/sell" className="btn-primary mt-4 inline-flex">Sell something</Link>
             </>}
           </div>
-          : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">{products?.map((product, index) => <div key={product.id} className="animate-rise" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}><ProductCard p={product} onClick={() => setQuickView(product)} /></div>)}</div>}
-      </section>
+          : <>
+            {filters.category !== SERVICE_CATEGORY && <ListingSection kind="product" title={filters.category || "Products"} items={productItems} hasSearch={hasSearch} onOpen={setQuickView} />}
+            {(!filters.category || filters.category === SERVICE_CATEGORY) && <ListingSection kind="service" title="Services" items={serviceItems} hasSearch={hasSearch} onOpen={setQuickView} />}
+          </>}
+      </div>
 
       {(trendingStores.length > 0 || !vendorsLoaded) && <section className="animate-rise">
         <SectionHeading title="Trending around KNUST" />
@@ -282,6 +285,20 @@ export default function Browse() {
       {quickView && <ProductQuickView product={quickView} meta={meta} onClose={closeQuickView} />}
     </div>
   );
+}
+
+function ListingSection({ kind, title, items, hasSearch, onOpen }: { kind: ListingKind; title: string; items: Card[]; hasSearch: boolean; onOpen: (p: Card) => void }) {
+  const noun = kind === "service" ? "services" : "products";
+  return <section className="animate-rise" aria-labelledby={`${kind}-section`}>
+    <div className="mb-4 flex items-center gap-3">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[30%] bg-[#e6ebdf] text-brand"><KindIcon kind={kind} size={20} /></span>
+      <h2 id={`${kind}-section`} className="font-display text-2xl font-bold tracking-[-.03em] sm:text-[1.7rem]">{title}</h2>
+      <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs font-semibold text-ink/60">{items.length}</span>
+    </div>
+    {items.length === 0
+      ? <p className="rounded-2xl border border-dashed border-line bg-white/70 px-4 py-6 text-center text-sm text-ink/60">{hasSearch ? `No ${noun} match your search or filters.` : `No ${noun} listed yet.`}</p>
+      : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">{items.map((product, index) => <div key={product.id} className="animate-rise" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}><ProductCard p={product} onClick={() => onOpen(product)} /></div>)}</div>}
+  </section>;
 }
 
 function SectionHeading({ title }: { title: string }) {
