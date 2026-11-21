@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Award, Building2, FileText, KeyRound, LogOut, PlayCircle, Truck, Users } from "lucide-react";
 import { GUIDES } from "../guides";
-import { SHOW_WELCOME_EVENT } from "../components/OnboardingOverlay";
+import { START_TOUR_EVENT } from "../components/GuidedTour";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import { BADGES } from "../components/badgeCatalog";
@@ -97,10 +97,10 @@ export default function Settings() {
         <ThemeToggle />
       </section>
 
-      <section className="card overflow-hidden" aria-labelledby="how-it-works">
+      <section data-tour="guides" className="card overflow-hidden" aria-labelledby="how-it-works">
         <div className="flex items-center justify-between gap-3 p-4">
           <div><h2 id="how-it-works" className="font-display text-lg font-bold">How it works</h2><p className="text-xs text-ink/60">Short guides for getting started</p></div>
-          <button type="button" onClick={() => window.dispatchEvent(new Event(SHOW_WELCOME_EVENT))} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold hover:bg-paper"><PlayCircle size={14} />Replay tour</button>
+          <button type="button" onClick={() => window.dispatchEvent(new Event(START_TOUR_EVENT))} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold hover:bg-paper"><PlayCircle size={14} />Replay tour</button>
         </div>
         <div className="divide-y divide-line border-t border-line">
           {GUIDES.map((g) => <details key={g.id} className="group">
@@ -125,7 +125,7 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">My storefront</span><span className="text-xs text-ink/60">View your public store</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
-        <Link to={me?.store_active ? "/store/edit" : "/store/create"} className="flex items-center gap-3 p-4 transition hover:bg-paper">
+        <Link data-tour="create-business" to={me?.store_active ? "/store/edit" : "/store/create"} className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Building2 size={19} className="text-brand" />
           <span className="flex-1"><span className="block text-sm font-semibold">{me?.store_active ? "Edit storefront" : "Create your business"}</span><span className="text-xs text-ink/60">{me?.store_active ? "Update your business details and banner" : "Open a storefront and sell as a business"}</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>

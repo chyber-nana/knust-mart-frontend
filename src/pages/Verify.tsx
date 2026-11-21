@@ -5,6 +5,7 @@ import { useAuth } from "../auth";
 import OutlookNotice from "../components/OutlookNotice";
 import { useToast } from "../components/Toast";
 import ChangeEmailForm from "../components/ChangeEmailForm";
+import { queueTour } from "../components/GuidedTour";
 import WhatsAppChannelCard from "../components/WhatsAppChannelCard";
 
 export default function Verify() {
@@ -28,6 +29,7 @@ export default function Verify() {
     api<{ access_token: string }>("/auth/verify-link", { method: "POST", body: { verification_token: token } })
       .then(async (result) => {
         await completeAuth(result.access_token);
+        queueTour();
         if (active) {
           toast("Email verified", "Your KNUST Mart account is ready.");
           nav("/", { replace: true });
@@ -53,6 +55,7 @@ export default function Verify() {
         body: { email: email.trim().toLowerCase(), otp_code: code },
       });
       await completeAuth(result.access_token);
+      queueTour();
       toast("Email verified", "Your KNUST Mart account is ready.");
       nav("/", { replace: true });
     } catch (x) {
