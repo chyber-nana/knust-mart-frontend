@@ -9,6 +9,8 @@ import StudentEmailPopup from "../components/StudentEmailPopup";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import { useToast } from "../components/Toast";
 import { CURRENT_TERMS_VERSION } from "../terms";
+import { suggestEmail } from "../emailCheck";
+import ChangeEmailForm from "../components/ChangeEmailForm";
 
 const STUDENT_DOMAINS = ["@st.knust.edu.gh", "@idl.knust.edu.gh"];
 
@@ -17,6 +19,8 @@ export default function Register() {
   const toast = useToast();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [typoIgnored, setTypoIgnored] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,13 +29,23 @@ export default function Register() {
   const [message, setMessage] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
   const normalizedEmail = email.trim().toLowerCase();
+  const suggestion = typoIgnored === normalizedEmail ? null : suggestEmail(normalizedEmail);
   const studentEmail = STUDENT_DOMAINS.some((domain) => normalizedEmail.endsWith(domain));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr("");
     setMessage("");
+    if (suggestion) {
+      setErr(`Check your email: did you mean ${suggestion}?`);
+      return;
+    }
+    if (confirmEmail.trim().toLowerCase() !== normalizedEmail) {
+      setErr("The two email addresses don't match.");
+      return;
+    }
     if (!isStrongPassword(password)) {
       setErr("Use at least 8 characters with uppercase and lowercase letters, a number, and a symbol.");
       return;
@@ -58,7 +72,8 @@ export default function Register() {
       if (studentEmail) {
         nav(`/verify?email=${encodeURIComponent(normalizedEmail)}`);
       } else {
-        setMessage("Check your email for a verification link. It will sign you in when you confirm your address.");
+        setSent(true);
+        setMessage(`We sent a verification link to ${normalizedEmail}. It will sign you in when you confirm your address.`);
       }
     } catch (x) {
       setErr((x as Error).message);
@@ -83,6 +98,11 @@ export default function Register() {
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Email address</span>
           <input className="input" type="email" autoComplete="email" placeholder="you@st.knust.edu.gh" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </label>
+        {suggestion && <p role="status" className="rounded-xl border border-gold/40 bg-gold/10 px-3.5 py-3 text-sm">Did you mean <button type="button" className="font-bold text-brand underline" onClick={() => setEmail(suggestion)}>{suggestion}</button>? <button type="button" className="ml-1 text-xs text-ink/60 underline" onClick={() => setTypoIgnored(normalizedEmail)}>No, it’s correct</button></p>}
+        <label className="block space-y-1.5">
+          <span className="text-sm font-semibold">Confirm email address</span>
+          <input className="input" type="email" autoComplete="off" placeholder="Type your email again" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} onPaste={(e) => e.preventDefault()} required />
         </label>
         {studentEmail
           ? <OutlookNotice />
@@ -118,6 +138,11 @@ export default function Register() {
         {message && <p role="status" className="rounded-xl bg-brand/5 px-4 py-3 text-sm text-brand">{message}</p>}
         <button className="btn-primary w-full rounded-xl py-3.5 shadow-lg shadow-brand/15" disabled={busy}>{busy ? "Creating account…" : "Create account"}</button>
       </form>
+      {sent && <div className="mt-4 text-center"><ChangeEmailForm email={normalizedEmail} onChanged={(next, type) => {
+        setEmail(next); setConfirmEmail(next);
+        if (type === "student") nav(`/verify?email=${encodeURIComponent(next)}`);
+        else setMessage(`We sent a new verification link to ${next}.`);
+      }} /></div>}
       <div className="mt-5"><WhatsAppChannelCard /></div>
       <p className="mt-6 text-center text-sm text-ink/65">Already registered? <Link to="/login" className="font-semibold text-brand hover:underline">Sign in</Link></p>
     </AuthLayout>

@@ -1,6 +1,8 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, Building2, FileText, KeyRound, LogOut, Truck, Users } from "lucide-react";
+import { Award, Building2, FileText, KeyRound, LogOut, PlayCircle, Truck, Users } from "lucide-react";
+import { GUIDES } from "../guides";
+import { SHOW_WELCOME_EVENT } from "../components/OnboardingOverlay";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import { BADGES } from "../components/badgeCatalog";
@@ -93,6 +95,28 @@ export default function Settings() {
           <p className="mt-1 text-xs text-ink/60">Switch between light and dark mode.</p>
         </div>
         <ThemeToggle />
+      </section>
+
+      <section className="card overflow-hidden" aria-labelledby="how-it-works">
+        <div className="flex items-center justify-between gap-3 p-4">
+          <div><h2 id="how-it-works" className="font-display text-lg font-bold">How it works</h2><p className="text-xs text-ink/60">Short guides for getting started</p></div>
+          <button type="button" onClick={() => window.dispatchEvent(new Event(SHOW_WELCOME_EVENT))} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold hover:bg-paper"><PlayCircle size={14} />Replay tour</button>
+        </div>
+        <div className="divide-y divide-line border-t border-line">
+          {GUIDES.map((g) => <details key={g.id} className="group">
+            <summary className="flex cursor-pointer list-none items-center gap-3 p-4 transition hover:bg-paper">
+              <span className="flex-1"><span className="block text-sm font-semibold">{g.title}</span><span className="text-xs text-ink/60">{g.summary}</span></span>
+              <span aria-hidden="true" className="text-ink/40 transition group-open:rotate-90">›</span>
+            </summary>
+            <div className="px-4 pb-4">
+              <ol className="space-y-3">{g.steps.map((s, n) => <li key={s.title} className="flex gap-3">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#e6ebdf] text-xs font-bold text-brand">{n + 1}</span>
+                <span className="text-sm"><b className="block">{s.title}</b><span className="text-ink/70">{s.body}</span></span>
+              </li>)}</ol>
+              {g.cta && <Link to={g.cta.to} className="btn-ghost mt-4 inline-flex text-xs">{g.cta.label}</Link>}
+            </div>
+          </details>)}
+        </div>
       </section>
 
       <section className="card divide-y divide-line overflow-hidden">

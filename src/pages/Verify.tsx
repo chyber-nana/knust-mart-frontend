@@ -4,6 +4,7 @@ import { api } from "../api";
 import { useAuth } from "../auth";
 import OutlookNotice from "../components/OutlookNotice";
 import { useToast } from "../components/Toast";
+import ChangeEmailForm from "../components/ChangeEmailForm";
 import WhatsAppChannelCard from "../components/WhatsAppChannelCard";
 
 export default function Verify() {
@@ -89,6 +90,7 @@ export default function Verify() {
     <div className="mx-auto mt-16 max-w-sm px-4">
       <h1 className="font-display text-2xl font-bold text-brand">Verify your student email</h1>
       <p className="mb-5 text-sm text-ink/70">Enter the 6-digit code we sent to your KNUST email. It expires in 10 minutes.</p>
+      {email && <p className="mb-4 rounded-xl bg-[#e6ebdf] px-3.5 py-3 text-sm">Code sent to <b className="break-all">{email}</b></p>}
       <div className="mb-4"><OutlookNotice showButton /></div>
       <div className="mb-4"><WhatsAppChannelCard /></div>
       <form onSubmit={verify} className="card space-y-3 p-5">
@@ -100,7 +102,9 @@ export default function Verify() {
         <button type="button" className="btn-ghost w-full" disabled={busy || countdown > 0 || !email} onClick={resend}>
           {countdown > 0 ? `Resend available in ${countdown}s` : "Resend code"}
         </button>
+        <p className="border-t border-line pt-3 text-xs leading-5 text-ink/60">Not arriving? Check spam or junk, wait a minute, then tap Resend. If the address above has a typo, fix it below.</p>
       </form>
+      <div className="mt-4 text-center"><ChangeEmailForm email={email} onChanged={(next) => { setEmail(next); setCode(""); setErr(""); setMessage(`A new code was sent to ${next}.`); setCountdown(60); }} /></div>
     </div>
   );
 }

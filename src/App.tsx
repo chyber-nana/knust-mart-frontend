@@ -13,6 +13,7 @@ import AdminAppeals from "./pages/AdminAppeals";
 import AdminAds from "./pages/AdminAds";
 import AdminBadges from "./pages/AdminBadges";
 import AdminUsers from "./pages/AdminUsers";
+import OnboardingOverlay from "./components/OnboardingOverlay";
 import AdminShell from "./pages/AdminShell";
 import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
@@ -143,6 +144,7 @@ function PublicLayout() {
           </>}
         </div>
       </nav>
+      <OnboardingOverlay />
     </div>
   );
 }
