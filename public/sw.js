@@ -1,29 +1,44 @@
-// KNUST Mart service worker: shows phone notifications sent by the server (Web Push).
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+/* KNUST Mart service worker — handles phone push notifications. */
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
 
 self.addEventListener("push", (event) => {
-  let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch { /* plain text */ }
+  let data = { title: "KNUST Mart", body: "You have a new update.", link: "/" };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch (_) {
+    /* keep defaults */
+  }
   const title = data.title || "KNUST Mart";
-  event.waitUntil(self.registration.showNotification(title, {
+  const options = {
     body: data.body || "",
-    icon: "/favicon.ico",
-    badge: "/favicon.ico",
-    tag: data.link || "knust-mart",
-    renotify: true,
+    icon: "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
+    badge: "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
     data: { link: data.link || "/" },
-  }));
+    tag: data.link || "knustmart",
+    renotify: true,
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const link = (event.notification.data && event.notification.data.link) || "/";
-  event.waitUntil((async () => {
-    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-    for (const client of all) {
-      if ("focus" in client) { await client.focus(); if ("navigate" in client) await client.navigate(link); return; }
-    }
-    await self.clients.openWindow(link);
-  })());
+  const url = new URL(link, self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
 });

@@ -1,11 +1,25 @@
 {
   "name": "KNUST Mart",
   "short_name": "KNUST Mart",
+  "description": "Campus marketplace for KNUST students — buy, sell and deliver on campus.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f4ee",
+  "orientation": "portrait-primary",
+  "background_color": "#e6ebdf",
   "theme_color": "#1f5d3a",
   "icons": [
-    { "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg", "sizes": "any", "type": "image/jpeg" }
+    {
+      "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
   ]
 }
