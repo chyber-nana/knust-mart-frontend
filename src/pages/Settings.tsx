@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Award, Building2, FileText, KeyRound, LogOut, PlayCircle, Truck, Users } from "lucide-react";
 import { GUIDES } from "../guides";
+import { disablePush, enablePush, pushState, PushState } from "../push";
 import { START_TOUR_EVENT } from "../components/GuidedTour";
 import { api } from "../api";
 import { useAuth } from "../auth";
@@ -9,6 +10,27 @@ import { BADGES } from "../components/badgeCatalog";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
 import LocationPicker from "../components/LocationPicker";
+
+function PhoneNotifications() {
+  const [state, setState] = useState<PushState | null>(null);
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { void pushState().then(setState); }, []);
+  if (!state) return null;
+  const toggle = async () => {
+    setBusy(true); setErr("");
+    try { if (state === "on") await disablePush(); else await enablePush(); setState(await pushState()); }
+    catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const note = state === "ios-install" ? "On iPhone: tap Share, then “Add to Home Screen”, and open KNUST Mart from there."
+    : state === "unsupported" ? "This browser doesn’t support phone notifications."
+    : state === "blocked" ? "Notifications are blocked. Allow them for this site in your browser settings."
+    : state === "on" ? "On. You’ll get alerts for orders, courier offers and messages." : "Get alerts for orders, courier offers and messages.";
+  return <section className="card flex items-center gap-3 p-4">
+    <div className="min-w-0 flex-1"><h2 className="font-display text-lg font-bold">Phone notifications</h2><p className="text-xs leading-5 text-ink/60">{note}</p>{err && <p role="alert" className="mt-1 text-xs text-red-700">{err}</p>}</div>
+    {(state === "on" || state === "off") && <button type="button" disabled={busy} onClick={toggle} className={state === "on" ? "btn-ghost px-4 py-2 text-xs" : "btn-primary px-4 py-2 text-xs"}>{busy ? "…" : state === "on" ? "Turn off" : "Turn on"}</button>}
+  </section>;
+}
 
 export default function Settings() {
   const { me, logout, refresh } = useAuth();
@@ -96,6 +118,8 @@ export default function Settings() {
         </div>
         <ThemeToggle />
       </section>
+
+      <PhoneNotifications />
 
       <section data-tour="guides" className="card overflow-hidden" aria-labelledby="how-it-works">
         <div className="flex items-center justify-between gap-3 p-4">

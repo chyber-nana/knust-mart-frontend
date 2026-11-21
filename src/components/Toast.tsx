@@ -1,16 +1,17 @@
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
 
-interface ToastMessage { id: number; title: string; body: string }
-type Notify = (title: string, body: string) => void;
+interface ToastMessage { id: number; title: string; body: string; onClick?: () => void }
+/** Pass onClick to make the popup tappable (e.g. open the related page). */
+type Notify = (title: string, body: string, onClick?: () => void) => void;
 
 const ToastContext = createContext<Notify>(() => {});
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const notify = useCallback<Notify>((title, body) => {
+  const notify = useCallback<Notify>((title, body, onClick) => {
     const id = Date.now() + Math.random();
-    setToasts((current) => [...current, { id, title, body }].slice(-3));
+    setToasts((current) => [...current, { id, title, body, onClick }].slice(-3));
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, 5000);
@@ -23,10 +24,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div key={toast.id} role="status" className="pointer-events-auto flex w-full items-start gap-3 rounded-2xl border border-line bg-white p-4 text-ink shadow-lg dark:shadow-black/30">
             <CheckCircle2 size={19} className="mt-0.5 shrink-0 text-brand" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">{toast.title}</p>
-              <p className="mt-0.5 text-sm text-ink/70">{toast.body}</p>
-            </div>
+            {toast.onClick
+              ? <button type="button" onClick={() => { setToasts((current) => current.filter((item) => item.id !== toast.id)); toast.onClick?.(); }} className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-bold">{toast.title}</p>
+                <p className="mt-0.5 text-sm text-ink/70">{toast.body}</p>
+                <p className="mt-1 text-xs font-semibold text-brand">Tap to view ›</p>
+              </button>
+              : <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold">{toast.title}</p>
+                <p className="mt-0.5 text-sm text-ink/70">{toast.body}</p>
+              </div>}
             <button type="button" aria-label="Dismiss notification" onClick={() => setToasts((current) => current.filter((item) => item.id !== toast.id))} className="grid h-7 w-7 shrink-0 place-items-center rounded-full hover:bg-paper"><X size={15} /></button>
           </div>
         ))}

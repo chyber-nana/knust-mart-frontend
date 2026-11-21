@@ -56,7 +56,7 @@ export default function NotificationCenter() {
           const orderPage = /^\/orders\/[^/]+$/.test(location.pathname);
           const actionAlreadyVisible = (orderPage && ["order_requested", "order_delivered"].includes(newest?.type ?? ""))
             || (location.pathname === "/courier" && ["order_delivered", "delivery_available"].includes(newest?.type ?? ""));
-          if (newest && !actionAlreadyVisible) toast(newest.title, newest.body);
+          if (newest && !actionAlreadyVisible) toast(newest.title, newest.body, newest.link ? () => void selectNotification(newest) : undefined);
         }
         lastSeenId.current = Math.max(lastSeenId.current ?? 0, ...response.items.map((item) => item.id));
         setItems(response.items);
@@ -78,7 +78,7 @@ export default function NotificationCenter() {
       || (location.pathname === "/courier" && ["order_delivered", "delivery_available"].includes(newest.type))
       || (newest.type === "message_received" && newest.link === location.pathname);
     if (!actionAlreadyVisible && lastSeenId.current !== null && newest.id > (lastSeenId.current ?? 0)) {
-      toast(newest.title, newest.body);
+      toast(newest.title, newest.body, newest.link ? () => void selectNotification(newest) : undefined);
     }
     lastSeenId.current = Math.max(lastSeenId.current ?? 0, newest.id);
     setItems((current) => [newest, ...current.filter((item) => item.id !== newest.id)].slice(0, 50));

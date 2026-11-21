@@ -1,0 +1,11 @@
+{
+  "name": "KNUST Mart",
+  "short_name": "KNUST Mart",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f4ee",
+  "theme_color": "#1f5d3a",
+  "icons": [
+    { "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg", "sizes": "any", "type": "image/jpeg" }
+  ]
+}

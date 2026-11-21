@@ -14,6 +14,7 @@ import AdminAds from "./pages/AdminAds";
 import AdminBadges from "./pages/AdminBadges";
 import AdminUsers from "./pages/AdminUsers";
 import GuidedTour from "./components/GuidedTour";
+import PushPrompt from "./components/PushPrompt";
 import AdminShell from "./pages/AdminShell";
 import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
@@ -145,6 +146,7 @@ function PublicLayout() {
         </div>
       </nav>
       <GuidedTour />
+      <PushPrompt />
     </div>
   );
 }
