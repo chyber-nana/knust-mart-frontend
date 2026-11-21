@@ -289,6 +289,8 @@ export default function Browse() {
 
 function ListingSection({ kind, title, items, hasSearch, onOpen }: { kind: ListingKind; title: string; items: Card[]; hasSearch: boolean; onOpen: (p: Card) => void }) {
   const noun = kind === "service" ? "services" : "products";
+  const [limit, setLimit] = useState(8);
+  const shown = items.slice(0, limit);
   return <section className="animate-rise" aria-labelledby={`${kind}-section`}>
     <div className="mb-4 flex items-center gap-3">
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[30%] bg-[#e6ebdf] text-brand"><KindIcon kind={kind} size={20} /></span>
@@ -297,7 +299,8 @@ function ListingSection({ kind, title, items, hasSearch, onOpen }: { kind: Listi
     </div>
     {items.length === 0
       ? <p className="rounded-2xl border border-dashed border-line bg-white/70 px-4 py-6 text-center text-sm text-ink/60">{hasSearch ? `No ${noun} match your search or filters.` : `No ${noun} listed yet.`}</p>
-      : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">{items.map((product, index) => <div key={product.id} className="animate-rise" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}><ProductCard p={product} onClick={() => onOpen(product)} /></div>)}</div>}
+      : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">{shown.map((product, index) => <div key={product.id} className="animate-rise h-full" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}><ProductCard p={product} onClick={() => onOpen(product)} /></div>)}</div>}
+    {items.length > limit && <button type="button" onClick={() => setLimit((n) => n + 8)} className="mx-auto mt-5 block rounded-full border border-line bg-white px-5 py-2 text-sm font-semibold text-brand transition hover:bg-paper">Show more ({items.length - limit} left)</button>}
   </section>;
 }
 

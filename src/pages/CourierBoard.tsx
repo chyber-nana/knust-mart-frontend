@@ -132,7 +132,7 @@ export default function CourierBoard() {
             {jobs.length > 0 && <button type="button" className="btn-primary mt-3" onClick={() => { setDismissedOfferId(null); setOfferId(jobs[0].id); }}>View a request</button>}
           </div> : <ul className="space-y-3">{active.map((d) => (
             <li key={d.id} className="rounded-2xl border border-line bg-white p-4">
-              <div className="flex items-center justify-between gap-2"><p className="truncate font-semibold">{d.product_title || "Delivery"}</p><StatusBadge status={d.status} /></div>
+              <div className="flex items-center justify-between gap-2"><p className="truncate font-semibold">{d.product_title || "Delivery"}{d.options ? ` (${d.options})` : ""}</p><StatusBadge status={d.status} /></div>
               <p className="mt-1 text-xs text-ink/60">{d.pickup} → {d.dropoff}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {d.status === "accepted" && <button className="btn-primary" onClick={() => void act(`/deliveries/${d.id}/pickup`, undefined, "Marked as picked up.")}>I picked it up</button>}

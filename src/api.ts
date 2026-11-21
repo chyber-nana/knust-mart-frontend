@@ -33,12 +33,12 @@ export async function apiForm<T>(path: string, form: FormData, method = "POST"):
   return res.json();
 }
 
-export interface Delivery { id: string; role: "buyer" | "courier" | "seller"; status: string; fulfillment_type: "courier" | "pickup"; choose_courier?: boolean; pickup: string; dropoff: string; fee: number; product_id?: string; product_title?: string; vendor_id?: string; vendor_name?: string; buyer_id?: string; reviewed?: boolean }
+export interface Delivery { id: string; role: "buyer" | "courier" | "seller"; status: string; fulfillment_type: "courier" | "pickup"; choose_courier?: boolean; options?: string; pickup: string; dropoff: string; fee: number; product_id?: string; product_title?: string; vendor_id?: string; vendor_name?: string; buyer_id?: string; reviewed?: boolean }
 export const canBuyerCancelDelivery = (delivery: Pick<Delivery, "role" | "status" | "fulfillment_type">) =>
   delivery.role === "buyer" && (delivery.fulfillment_type === "courier"
     ? ["awaiting_seller", "pending", "accepted"].includes(delivery.status)
     : ["awaiting_seller", "ready_for_pickup"].includes(delivery.status));
-export interface Job { id: string; pickup: string; dropoff: string; fee: number; price_min: number; price_max: number; my_offer: number | null; choose_courier: boolean; open_offers: number; fixed_accept_open: boolean; available_at: string | null; product_title: string }
+export interface Job { id: string; pickup: string; dropoff: string; fee: number; price_min: number; price_max: number; my_offer: number | null; options?: string; choose_courier: boolean; open_offers: number; fixed_accept_open: boolean; available_at: string | null; product_title: string }
 export interface CourierOffer { id: string; courier_name: string; price: number; completed: number; is_new: boolean; verified_student: boolean }
 export const HALLS = ["Africa", "Republic", "Unity", "Katanga", "Queens", "Independence"];
 export const HOSTELS = ["Wilkado Hostel", "SRC Hostel", "Brunei Hostel", "GUSSS Hostel"];
@@ -66,7 +66,7 @@ export async function upload(file: File): Promise<string> {
 
 export interface Seller { id: string; name: string; user_type: string; pickup_location?: string | null; phone_number?: string | null; whatsapp_number?: string | null }
 export interface Card {
-  stock: number | null; id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
+  stock: number | null; colors?: string[]; sizes?: string[]; id: string; title: string; price: number; category: string; condition: string | null; hall_location: string | null; image: string | null; is_promoted: boolean; seller: Seller }
 export interface Meta { categories: string[]; conditions: string[]; locations: string[]; fees: Record<string, { listing: number; promotion: number }>; delivery_fee: number }
 export interface ChatMessage { id: number; product_id: string; sender_id: string; receiver_id: string; message: string; sent_at: string }
 export interface ChatThread { product_id: string; product_title: string; counterpart_id: string; counterpart_name: string; last_message: string; sent_at: string; unread_count: number }

@@ -13,6 +13,7 @@ interface R {
   fulfillment_type: "courier" | "pickup";
   product_id: string;
   product_title: string;
+  options?: string;
   vendor_name: string;
   pickup: string;
   dropoff: string;
@@ -92,7 +93,7 @@ export default function Receipt() {
   const progressIndex = r.status === "cancelled" ? -1 : r.status === "ready_for_pickup" ? 1 : r.status === "accepted" ? 2 : r.status === "in_transit" ? 3 : r.status === "delivered" ? steps.length - 1 : steps.findIndex((step) => step.key === r.status);
   return (
     <div className="mx-auto max-w-md">
-      <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1><div className="mt-2"><StatusBadge status={r.status} /></div></div>
+      <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1>{r.options && <p className="mt-1 text-sm font-semibold text-ink/65">{r.options}</p>}<div className="mt-2"><StatusBadge status={r.status} /></div></div>
       <section className="card mb-4 rounded-2xl p-4">
         <h2 className="mb-4 text-sm font-semibold">Order progress</h2>
         <ol className="space-y-3">

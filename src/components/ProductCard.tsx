@@ -13,7 +13,7 @@ export default function ProductCard({ p, onClick }: { p: Card; onClick?: () => v
         <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.1em] text-brand"><KindIcon kind={kind} size={12} />{KIND_LABEL[kind]}</span>
         <button type="button" aria-label="Save item" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }} className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-white/80 bg-white/90 text-ink/65 transition hover:bg-white hover:text-brand"><Heart size={15} /></button>
       </div>
-      <div className="space-y-2 p-3 sm:p-3.5">
+      <div className="flex-1 space-y-2 p-3 sm:p-3.5">
         <p className="font-display text-lg font-bold tracking-tight sm:text-xl">GH₵{p.price.toFixed(2)}</p>
         {p.stock != null && p.stock > 0 && p.stock <= 5 && <p className="text-[11px] font-semibold text-red-700">Only {p.stock} left</p>}
         <p className="line-clamp-2 min-h-10 text-[13px] leading-5 text-ink/80">{p.title}</p>
@@ -24,7 +24,7 @@ export default function ProductCard({ p, onClick }: { p: Card; onClick?: () => v
         <div className="pt-1"><SellerBadge type={p.seller.user_type} /></div>
       </div>
     </>;
-  const className = "product-card group block w-full overflow-hidden rounded-[1.25rem] border border-line bg-white text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md";
+  const className = "product-card group flex h-full w-full flex-col overflow-hidden rounded-[1.25rem] border border-line bg-white text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md";
   return onClick
     ? <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick(); } }} className={`${className} cursor-pointer`}>{content}</div>
     : <Link to={`/products/${p.id}`} className={className}>{content}</Link>;

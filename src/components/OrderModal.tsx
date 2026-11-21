@@ -28,6 +28,8 @@ export default function OrderModal({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [compare, setCompare] = useState(false);
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
   const image = product.images?.[0] ?? product.image;
   const pickupLocation = product.seller.pickup_location || product.hall_location;
   const isMine = me?.id === product.seller.id;
@@ -45,6 +47,7 @@ export default function OrderModal({
   }, [onClose]);
 
   const placeOrder = async () => {
+    if ((product.colors?.length && !color) || (product.sizes?.length && !size)) { setError(`Please choose a ${product.colors?.length && !color ? "colour" : "size"}.`); return; }
     if (!meta || (fulfillment === "courier" && !location) || (fulfillment === "pickup" && !pickupLocation)) return;
     setBusy(true);
     setError("");
@@ -57,6 +60,8 @@ export default function OrderModal({
           dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,
           choose_courier: fulfillment === "courier" && compare,
+          color: color || undefined,
+          size: size || undefined,
         },
       });
       notify("Order requested", fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item + delivery), by MoMo or cash. Only pay once the item is in your hand.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect it.`);
@@ -90,6 +95,7 @@ export default function OrderModal({
           {isMine ? <p className="text-sm text-ink/65">This is your listing.</p>
             : !isAvailable ? <p className="text-sm font-semibold text-red-700">This listing is no longer available.</p>
               : me ? <>
+                {([["Colour", product.colors, color, setColor], ["Size", product.sizes, size, setSize]] as const).map(([label, list, value, set]) => list && list.length > 0 && <div key={label}><p className="mb-1 text-xs font-semibold text-ink/60">{label}</p><div className="flex flex-wrap gap-1.5">{list.map((v) => <button key={v} type="button" aria-pressed={value === v} onClick={() => set(v)} className={`rounded-full border px-3 py-1 text-xs font-semibold ${value === v ? "border-brand bg-brand text-white" : "border-line bg-white text-ink/70"}`}>{v}</button>)}</div></div>)}
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" aria-pressed={fulfillment === "courier"} onClick={() => setFulfillment("courier")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "courier" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Courier · GH₵{meta?.delivery_fee.toFixed(2) ?? "–"}</button>
                   <button type="button" aria-pressed={fulfillment === "pickup"} onClick={() => setFulfillment("pickup")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "pickup" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Pickup · Free</button>

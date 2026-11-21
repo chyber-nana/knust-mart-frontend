@@ -96,7 +96,7 @@ export default function ImageCropDialog({ src, title, aspect, enhanceable = fals
       ctx.drawImage(img, -left / s, -top / s, b.width / s, b.height / s, 0, 0, ow, oh);
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.9));
       if (!blob) throw new Error("Could not export the cropped image.");
-      onApply(new File([blob], `${crypto.randomUUID()}.jpg`, { type: "image/jpeg" }));
+      onApply(new File([blob], `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.jpg`, { type: "image/jpeg" }));
     } catch (x) { setErr((x as Error).message); setWorking(false); }
   };
 

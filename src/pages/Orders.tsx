@@ -58,7 +58,7 @@ export default function Orders() {
           <li key={d.id} className="card flex flex-wrap items-center gap-3 p-4">
             <Link to={d.role === "courier" ? "/courier" : `/orders/${d.id}`} className="flex min-w-0 flex-1 items-center gap-3">
               <div className="flex-1">
-                <p className="font-semibold">{d.product_title ? `${d.product_title} · ` : ""}{d.pickup} → {d.dropoff}</p>
+                <p className="font-semibold">{d.product_title ? `${d.product_title}${d.options ? ` (${d.options})` : ""} · ` : ""}{d.pickup} → {d.dropoff}</p>
                 <p className="text-xs capitalize text-ink/60">{d.role} · {d.fulfillment_type === "pickup" ? "pickup" : `courier · GH₵${Number(d.fee).toFixed(2)}`}</p>
               </div>
               <StatusBadge status={d.status} /><ChevronRight size={16} />
