@@ -59,7 +59,7 @@ export default function OrderModal({
           choose_courier: fulfillment === "courier" && compare,
         },
       });
-      notify("Order requested", `${product.title} was added to your orders.`);
+      notify("Order requested", fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item + delivery), by MoMo or cash. Only pay once the item is in your hand.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect it.`);
       navigate(`/orders/${delivery.id}`);
     } catch (cause) {
       setError((cause as Error).message);
@@ -72,14 +72,14 @@ export default function OrderModal({
       className="modal-backdrop fixed inset-0 z-[70] flex items-center justify-center bg-black/55 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}
     >
-      <section role="dialog" aria-modal="true" aria-labelledby="order-modal-title" className="modal-panel relative w-full max-w-sm overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl">
-        <div className="relative aspect-[4/3] bg-[#eae8e0]">
+      <section role="dialog" aria-modal="true" aria-labelledby="order-modal-title" className="modal-panel relative flex max-h-[80dvh] w-full max-w-sm flex-col overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl">
+        <div className="relative h-40 shrink-0 bg-[#eae8e0] sm:aspect-[4/3] sm:h-auto">
           {image && <img src={mediaUrl(image)} alt={product.title} className="h-full w-full object-cover" />}
           <button type="button" aria-label="Close order popup" onClick={onClose} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink shadow">
             <X size={18} />
           </button>
         </div>
-        <div className="space-y-3 p-4">
+        <div className="space-y-2 overflow-y-auto p-3 sm:space-y-2.5 sm:p-3.5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-ink/60">{product.seller.name}</p>
@@ -107,7 +107,6 @@ export default function OrderModal({
                 )}
                 {fulfillment === "courier" && location && !CAMPUS_NAMES.includes(location.trim().toLowerCase()) && <p role="note" className="rounded-xl bg-[#f0eadc] px-3 py-2.5 text-xs leading-5 text-ink/75">Couriers only deliver between campus halls and hostels. For anywhere else, choose Pickup instead.</p>}
                 {fulfillment === "courier" && <label className="flex items-center gap-2 text-xs text-ink/65"><input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />Let me compare courier prices (optional)</label>}
-                <p role="note" className="rounded-xl bg-[#e6ebdf] px-3 py-2.5 text-xs leading-5 text-ink/75">{fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item GH₵${product.price.toFixed(2)} + delivery GH₵${(meta?.delivery_fee ?? 5).toFixed(2)}), by MoMo or cash.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect the item.`} KNUST Mart does not take product payments. Only pay once the item is in your hand.</p>
                 <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && (!location || !CAMPUS_NAMES.includes(location.trim().toLowerCase()))) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
