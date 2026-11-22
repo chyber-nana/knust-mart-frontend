@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { api, canBuyerCancelDelivery } from "../api";
+import CourierOffers from "../components/CourierOffers";
 import StatusBadge from "../components/StatusBadge";
 import { useToast } from "../components/Toast";
 import ReviewModal from "../components/ReviewModal";
@@ -25,6 +26,7 @@ interface R {
   pin_code: string | null;
   reviewed?: boolean;
   released?: boolean;
+  choose_courier?: boolean;
   dropoff_note?: string | null;
   courier_name?: string | null;
   courier_phone?: string | null;
@@ -106,6 +108,7 @@ export default function Receipt() {
     <div className="mx-auto max-w-md">
       <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1>{r.options && <p className="mt-1 text-sm font-semibold text-ink/65">{r.options}</p>}<div className="mt-2"><StatusBadge status={r.status} /></div></div>
       <NextStepCard info={{ role: r.role, status: r.status, fulfillment_type: r.fulfillment_type, released: r.released, pickup: r.pickup, dropoff: r.dropoff, dropoff_note: r.dropoff_note }} />
+      {r.fulfillment_type === "courier" && r.role === "buyer" && r.status === "pending" && <div className="mb-4">{r.choose_courier ? <CourierOffers deliveryId={id ?? ""} onChosen={() => void load()} /> : <p className="text-xs text-ink/65">Finding a courier at GH₵{Number(r.fee).toFixed(2)}. <button type="button" className="font-semibold text-brand underline" onClick={() => void api(`/deliveries/${id}/choose-mode`, { method: "POST" }).then(() => load()).catch(() => undefined)}>Compare courier prices instead</button></p>}</div>}
       {r.fulfillment_type === "courier" && r.role === "seller" && r.status === "accepted" && !r.released && <button type="button" disabled={busy} onClick={() => void handedOver()} className="btn-primary mb-4 w-full">{busy ? "Confirming…" : "I handed it to the courier"}</button>}
       {r.fulfillment_type === "courier" && r.courier_name && ["accepted", "in_transit"].includes(r.status) && <div className="card mb-4 flex flex-wrap items-center gap-2 rounded-2xl p-3"><span className="mr-auto text-sm font-semibold">Courier: {r.courier_name}</span><CallLink phone={r.courier_phone} label="Call courier" /></div>}
       {r.fulfillment_type === "courier" && r.role === "buyer" && ["accepted", "in_transit"].includes(r.status) && <div className="mb-4"><PlaceLink place={r.dropoff} label="Show my drop-off on map" /></div>}

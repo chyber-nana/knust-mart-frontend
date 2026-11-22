@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
 import InboxBadge from "./components/InboxBadge";
 import OrdersDot from "./components/OrdersDot";
+import SalesPage from "./pages/Sales";
 import Chat from "./pages/Chat";
 import ReviewOrder from "./pages/ReviewOrder";
 import Browse from "./pages/Browse";
@@ -205,6 +206,7 @@ export default function App() {
           <Route path="/store/activated" element={<StoreActivated />} />
           <Route path="/store/edit" element={<RequireStore><EditStore /></RequireStore>} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/sales" element={<SalesPage />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/orders/:id/review" element={<ReviewOrder />} />
           <Route path="/orders/:id" element={<Receipt />} />
