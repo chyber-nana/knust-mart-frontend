@@ -1,3 +1,4 @@
+import { unlinkPush } from "./push";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { api } from "./api";
 
@@ -44,6 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("token", token);
     await refresh();
   };
-  const logout = () => { localStorage.removeItem("token"); setMe(null); setAppealOnly(false); };
+  const logout = () => { void unlinkPush().finally(() => { localStorage.removeItem("token"); setMe(null); setAppealOnly(false); }); };
   return <AuthCtx.Provider value={{ me, appealOnly, loading, login, completeAuth, logout, refresh }}>{children}</AuthCtx.Provider>;
 }

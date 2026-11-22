@@ -40,3 +40,29 @@ export async function disablePush(): Promise<void> {
   await api("/push/unsubscribe", { method: "POST", body: { endpoint: sub.endpoint } }).catch(() => {});
   await sub.unsubscribe();
 }
+
+/** A phone's push subscription belongs to one account at a time. Re-link it to whoever is signed in now. */
+export async function syncPush(): Promise<void> {
+  try {
+    if (!("serviceWorker" in navigator) || !("Notification" in window) || Notification.permission !== "granted") return;
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    const sub = await reg?.pushManager.getSubscription();
+    if (!sub) return;
+    const json = sub.toJSON();
+    await api("/push/subscribe", { method: "POST", body: { endpoint: json.endpoint, keys: json.keys } });
+  } catch { /* best effort */ }
+}
+
+/** On sign-out, stop this phone receiving the previous account's alerts (the browser permission stays). */
+export async function unlinkPush(): Promise<void> {
+  try {
+    if (!("serviceWorker" in navigator)) return;
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    const sub = await reg?.pushManager.getSubscription();
+    if (!sub) return;
+    await Promise.race([
+      api("/push/unsubscribe", { method: "POST", body: { endpoint: sub.endpoint } }),
+      new Promise((resolve) => window.setTimeout(resolve, 1500)),
+    ]);
+  } catch { /* best effort */ }
+}

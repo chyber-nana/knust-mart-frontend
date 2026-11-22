@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Bell, Download, Share, X } from "lucide-react";
 import { useAuth } from "../auth";
-import { enablePush, pushState, PushState } from "../push";
+import { enablePush, pushState, PushState, syncPush } from "../push";
 
 interface InstallEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -31,7 +31,7 @@ export default function AppPrompt() {
     window.addEventListener("appinstalled", onInstalled);
     return () => { window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("appinstalled", onInstalled); };
   }, []);
-  useEffect(() => { if (me) void pushState().then(setPush); }, [me, installed]);
+  useEffect(() => { if (me) void syncPush().then(() => pushState()).then(setPush); }, [me?.id, installed]); // re-link this phone to the signed-in account
 
   if (!me || !ready) return null;
 
