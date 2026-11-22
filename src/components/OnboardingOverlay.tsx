@@ -3,14 +3,17 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useAuth } from "../auth";
 import { GUIDES, guideById } from "../guides";
+import { useFlags } from "../flags";
 
 const key = (id: string) => `knust:welcome-seen:${id}`;
 export const SHOW_WELCOME_EVENT = "knust:show-welcome";
-const SLIDES = ["create-business", "add-products", "become-courier", "courier-tasks"].map(guideById);
+const ALL_SLIDES = ["create-business", "add-products", "become-courier", "courier-tasks"].map(guideById);
 
 /** Full-screen welcome tour shown once per user on a device; replayable from Settings. */
 export default function OnboardingOverlay() {
   const { me } = useAuth();
+  const flags = useFlags();
+  const SLIDES = ALL_SLIDES.filter((g) => flags.courier || !["become-courier", "courier-tasks"].includes(g.id));
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
 

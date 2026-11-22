@@ -10,6 +10,8 @@ import { BADGES } from "../components/badgeCatalog";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
 import LocationPicker from "../components/LocationPicker";
+import { useFlags } from "../flags";
+import MomoForm from "../components/MomoForm";
 
 function PhoneNotifications() {
   const [state, setState] = useState<PushState | null>(null);
@@ -34,6 +36,7 @@ function PhoneNotifications() {
 
 export default function Settings() {
   const { me, logout, refresh } = useAuth();
+  const flags = useFlags();
   const [location, setLocation] = useState(me?.hostel_or_business_address ?? "");
   const [whatsapp, setWhatsapp] = useState(me?.whatsapp_number ?? "");
   const [contactBusy, setContactBusy] = useState(false);
@@ -127,7 +130,7 @@ export default function Settings() {
           <button type="button" onClick={() => window.dispatchEvent(new Event(START_TOUR_EVENT))} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold hover:bg-paper"><PlayCircle size={14} />Replay tour</button>
         </div>
         <div className="divide-y divide-line border-t border-line">
-          {GUIDES.map((g) => <details key={g.id} className="group">
+          {GUIDES.filter((g) => (flags.courier || !(["become-courier", "courier-tasks"].includes(g.id))) && (flags.escrow || g.id !== "payments")).map((g) => <details key={g.id} className="group">
             <summary className="flex cursor-pointer list-none items-center gap-3 p-4 transition hover:bg-paper">
               <span className="flex-1"><span className="block text-sm font-semibold">{g.title}</span><span className="text-xs text-ink/60">{g.summary}</span></span>
               <span aria-hidden="true" className="text-ink/40 transition group-open:rotate-90">›</span>
@@ -154,11 +157,11 @@ export default function Settings() {
           <span className="flex-1"><span className="block text-sm font-semibold">{me?.store_active ? "Edit storefront" : "Create your business"}</span><span className="text-xs text-ink/60">{me?.store_active ? "Update your business details and banner" : "Open a storefront and sell as a business"}</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
         </Link>
-        <Link to="/courier" className="flex items-center gap-3 p-4 transition hover:bg-paper">
+        {flags.courier && <Link to="/courier" className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Truck size={19} className="text-brand" />
           <span className="flex-1"><span className="block text-sm font-semibold">Courier</span><span className="text-xs text-ink/60">{me?.is_courier ? "Manage delivery jobs" : "Join the student courier network"}</span></span>
           <span aria-hidden="true" className="text-ink/40">›</span>
-        </Link>
+        </Link>}
         <Link to="/terms" className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <FileText size={19} className="text-brand" />
           <span className="flex-1"><span className="block text-sm font-semibold">Terms and Conditions</span><span className="text-xs text-ink/60">Review the current terms and business rules</span></span>
@@ -200,6 +203,8 @@ export default function Settings() {
           })}
         </ul>
       </section>
+
+      {flags.escrow && <MomoForm />}
 
       <form onSubmit={saveContacts} className="card space-y-3 p-4 sm:p-5">
         <div><h2 className="font-display text-lg font-bold">Seller contact details</h2><p className="mt-1 text-xs text-ink/60">Buyers can use these details from your storefront and product pages.</p></div>

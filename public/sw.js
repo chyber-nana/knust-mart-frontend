@@ -2,6 +2,9 @@
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 
+// A pass-through fetch handler: lets older Chrome versions treat the site as installable. Network behaviour is unchanged.
+self.addEventListener("fetch", () => {});
+
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch { /* plain text */ }

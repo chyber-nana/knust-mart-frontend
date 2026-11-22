@@ -30,6 +30,11 @@ interface R {
   dropoff_note?: string | null;
   courier_name?: string | null;
   courier_phone?: string | null;
+  item_amount?: number | null;
+  service_fee?: number | null;
+  total?: number | null;
+  paid?: boolean;
+  refunded?: boolean;
 }
 
 export default function Receipt() {
@@ -68,6 +73,14 @@ export default function Receipt() {
     } catch (e) { setErr((e as Error).message); }
     finally { setBusy(false); }
   };
+  const payNow = async () => {
+    setBusy(true);
+    setErr("");
+    try {
+      const c = await api<{ authorization_url: string }>(`/deliveries/${id}/pay`, { method: "POST" });
+      window.location.href = c.authorization_url;
+    } catch (e) { setErr((e as Error).message); setBusy(false); }
+  };
   const respondToOrder = async (available: boolean) => {
     if (!available && !confirm("Mark this item as unavailable and release the buyer's order?")) return;
     setBusy(true);
@@ -101,9 +114,9 @@ export default function Receipt() {
   const showReview = done && r.role === "buyer" && !r.reviewed && !reviewDismissed;
   const canReport = r.role === "buyer" && r.fulfillment_type === "courier" && ["in_transit", "delivered", "failed"].includes(r.status);
   const steps = r.fulfillment_type === "pickup"
-    ? [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "ready_for_pickup", label: "Ready for pickup" }, { key: "delivered", label: "Picked up" }]
-    : [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "pending", label: "Finding courier" }, { key: "accepted", label: "Courier assigned" }, { key: "in_transit", label: "On the way" }, { key: "delivered", label: "Delivered" }];
-  const progressIndex = r.status === "cancelled" ? -1 : r.status === "ready_for_pickup" ? 1 : r.status === "accepted" ? 2 : r.status === "in_transit" ? 3 : r.status === "delivered" ? steps.length - 1 : steps.findIndex((step) => step.key === r.status);
+    ? [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "awaiting_payment", label: "Payment" }, { key: "ready_for_pickup", label: "Ready for pickup" }, { key: "delivered", label: "Picked up" }]
+    : [{ key: "awaiting_seller", label: "Seller confirming" }, { key: "awaiting_payment", label: "Payment" }, { key: "pending", label: "Finding courier" }, { key: "accepted", label: "Courier assigned" }, { key: "in_transit", label: "On the way" }, { key: "delivered", label: "Delivered" }];
+  const progressIndex = r.status === "cancelled" ? -1 : r.status === "delivered" ? steps.length - 1 : steps.findIndex((step) => step.key === r.status);
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-5 text-center"><div className={`mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[30%] ${done ? "bg-[#e6ebdf] text-brand" : "bg-[#f0eadc] text-gold"}`}>{done ? <CheckCircle2 size={26} /> : <ShieldCheck size={26} />}</div><p className="mb-1 text-[10px] font-bold uppercase tracking-[.18em] text-gold">{r.role === "seller" ? "Order progress" : r.fulfillment_type === "pickup" ? "Seller pickup" : "Campus handover"}</p><h1 className="font-display text-2xl font-bold">{r.product_title}</h1>{r.options && <p className="mt-1 text-sm font-semibold text-ink/65">{r.options}</p>}<div className="mt-2"><StatusBadge status={r.status} /></div></div>
@@ -120,11 +133,22 @@ export default function Receipt() {
             <span className={`text-sm ${index === progressIndex ? "font-semibold text-ink" : "text-ink/55"}`}>{step.label}</span>
           </li>)}
         </ol>
-        {["failed", "disputed"].includes(r.status) && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">{r.status === "failed" ? "This order could not be completed." : "This order is under review."}</p>}
+        {["failed", "disputed"].includes(r.status) && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">{r.status === "failed" ? "This order could not be completed." : "This order is under review. Your payment stays held until our team decides."}</p>}
         {r.status === "cancelled" && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800">This order was cancelled before handoff.</p>}
         <p className="mt-4 border-t border-line pt-3 text-xs text-ink/60">{r.fulfillment_type === "pickup" ? `Meet at ${r.dropoff} · Free` : `${r.pickup} → ${r.dropoff} · GH₵${Number(r.fee).toFixed(2)}`}</p>
         {r.role === "seller" && r.buyer_id && <Link className="btn-ghost mt-3 w-full" to={`/chat/${r.product_id}/${r.buyer_id}`}>Message buyer</Link>}
       </section>
+      {r.item_amount != null && <section className="card mb-4 rounded-2xl p-4 text-sm">
+        <h2 className="mb-3 text-sm font-semibold">{r.role === "buyer" ? "Payment" : "Your earnings"}</h2>
+        {r.role === "buyer" ? <dl className="space-y-1.5">
+          <div className="flex justify-between"><dt className="text-ink/65">Item</dt><dd>GH₵{Number(r.item_amount).toFixed(2)}</dd></div>
+          {r.fulfillment_type === "courier" && <div className="flex justify-between"><dt className="text-ink/65">Delivery</dt><dd>GH₵{Number(r.fee).toFixed(2)}</dd></div>}
+          <div className="flex justify-between"><dt className="text-ink/65">Service fee</dt><dd>GH₵{Number(r.service_fee ?? 0).toFixed(2)}</dd></div>
+          <div className="flex justify-between border-t border-line pt-2 font-semibold"><dt>Total</dt><dd>GH₵{(r.total ?? Number(r.item_amount) + (r.fulfillment_type === "courier" ? Number(r.fee) : 0) + Number(r.service_fee ?? 0)).toFixed(2)}</dd></div>
+          <p className="pt-2 text-xs text-ink/55">{r.refunded ? "This payment was refunded to you in full." : r.paid ? "Paid. Your money is held safely and goes to the seller only when you give the courier your code or confirm pickup." : "Not paid yet."}</p>
+        </dl> : <p>You receive <b>GH₵{Number(r.item_amount).toFixed(2)}</b> by MoMo once the handover is confirmed. The buyer pays all fees.{r.paid ? " The buyer has paid and the money is held." : " Waiting for the buyer to pay."}</p>}
+      </section>}
+      {r.role === "buyer" && r.status === "awaiting_payment" && <button type="button" disabled={busy} onClick={() => void payNow()} className="btn-primary mb-4 w-full">{busy ? "Opening checkout…" : `Pay GH₵${(Number(r.item_amount ?? 0) + (r.fulfillment_type === "courier" ? Number(r.fee) : 0) + Number(r.service_fee ?? 0)).toFixed(2)}`}</button>}
       {canBuyerCancelDelivery(r) && <button type="button" disabled={busy} onClick={() => void cancelOrder()} className="btn-danger mb-4 w-full rounded-xl">{busy ? "Cancelling…" : "Cancel order"}</button>}
       {r.role === "seller" && r.status === "awaiting_seller" && <div className="card mb-4 space-y-2 rounded-2xl p-4">
         <p className="text-sm font-semibold">Can you fulfill this order?</p>

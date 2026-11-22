@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
@@ -11,6 +11,8 @@ export default function StoreActivated() {
   const reference = params.get("reference");
   const promotion = params.get("purpose") === "promotion";
 const courier = params.get("purpose") === "courier";
+const order = params.get("purpose") === "order";
+const navigate = useNavigate();
 const productId = params.get("product");
   const { refresh } = useAuth();
   const [state, setState] = useState<State>("checking");
@@ -23,8 +25,9 @@ const productId = params.get("product");
       // The webhook can arrive a moment after the redirect, so check a few times.
       for (let i = 0; i < 10 && alive; i++) {
         try {
-          const result = await api<{ status: string; store_active: boolean; courier_active?: boolean }>(`/payments/verify/${encodeURIComponent(reference)}`);
-          if (promotion || courier ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
+          const result = await api<{ status: string; store_active: boolean; courier_active?: boolean; delivery_id?: string | null }>(`/payments/verify/${encodeURIComponent(reference)}`);
+          if (order && result.status === "success" && result.delivery_id) { navigate(`/orders/${result.delivery_id}`, { replace: true }); return; }
+          if (promotion || courier || order ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
           if (result.status === "flagged") { if (alive) setState("flagged"); return; }
         } catch (x) {
           if (alive) { setErr((x as Error).message); setState("error"); }

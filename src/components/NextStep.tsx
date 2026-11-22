@@ -2,14 +2,15 @@ import { MapPin, Phone } from "lucide-react";
 
 export const mapsUrl = (place: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place}, KNUST, Kumasi, Ghana`)}`;
 
-interface Info { role: "buyer" | "seller" | "courier"; status: string; fulfillment_type: string; released?: boolean; pickup: string; dropoff: string; dropoff_note?: string | null }
+interface Info { role: "buyer" | "seller" | "courier"; status: string; fulfillment_type: string; released?: boolean; paid?: boolean; pickup: string; dropoff: string; dropoff_note?: string | null }
 
 /** One plain instruction for what the viewer should do right now. */
 export function nextStep(i: Info): { title: string; text: string } | null {
   const { role, status: s } = i;
+  if (s === "awaiting_payment") return role === "buyer" ? { title: "Pay to secure your order", text: "The seller confirmed the item. Pay once (item, delivery and service fee). Your money is held safely until the handover is confirmed." } : { title: "Waiting for the buyer to pay", text: "You'll be told as soon as payment is received. Don't hand over the item before then." };
   if (i.fulfillment_type === "pickup") {
     if (s === "awaiting_seller") return role === "seller" ? { title: "Confirm you have the item", text: "Tell the buyer if it's available." } : { title: "Waiting for the seller", text: "The seller is confirming the item is available." };
-    if (s === "ready_for_pickup") return role === "seller" ? { title: "Buyer is coming to collect", text: `Meet them at ${i.pickup}. Take payment by MoMo or cash.` } : { title: "Go and collect it", text: `Meet the seller at ${i.pickup}, pay by MoMo or cash, then tap "I picked it up".` };
+    if (s === "ready_for_pickup") return role === "seller" ? { title: "Buyer is coming to collect", text: i.paid ? `Meet them at ${i.pickup}. The buyer has already paid; you're paid by MoMo once they confirm pickup.` : `Meet them at ${i.pickup}. Take payment by MoMo or cash.` } : { title: "Go and collect it", text: i.paid ? `Meet the seller at ${i.pickup}, check the item, then tap "I picked it up". Only then is the seller paid.` : `Meet the seller at ${i.pickup}, pay by MoMo or cash, then tap "I picked it up".` };
     return null;
   }
   if (s === "awaiting_seller") return role === "seller" ? { title: "Confirm you have the item", text: "Open the order and tell the buyer it's available." } : { title: "Waiting for the seller", text: "The seller is confirming the item is available." };
@@ -24,8 +25,8 @@ export function nextStep(i: Info): { title: string; text: string } | null {
     return { title: "Handed to the courier", text: role === "buyer" ? "The courier is setting off to you." : "The courier has the item." };
   }
   if (s === "in_transit") {
-    if (role === "courier") return { title: "Step 3: deliver it", text: `Go to ${i.dropoff}${i.dropoff_note ? ` (${i.dropoff_note})` : ""}. Call the buyer to meet. Scan their QR or enter their PIN, then collect payment.` };
-    if (role === "buyer") return { title: "On its way to you", text: `Be at ${i.dropoff}. Show your QR or PIN only once the item is in your hands, then pay the seller and courier.` };
+    if (role === "courier") return { title: "Step 3: deliver it", text: `Go to ${i.dropoff}${i.dropoff_note ? ` (${i.dropoff_note})` : ""}. Call the buyer to meet. Scan their QR or enter their PIN.${i.paid ? " Your delivery fee is already paid and is sent to your MoMo in the weekly payout." : ", then collect payment."}` };
+    if (role === "buyer") return { title: "On its way to you", text: `Be at ${i.dropoff}. Show your QR or PIN only once the item is in your hands, ${i.paid ? "which releases your payment to the seller and courier. You've already paid." : "then pay the seller and courier."}` };
     return { title: "Out for delivery", text: "The courier is bringing it to the buyer." };
   }
   return null;

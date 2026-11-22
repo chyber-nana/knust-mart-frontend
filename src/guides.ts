@@ -54,6 +54,19 @@ export const GUIDES: Guide[] = [
     cta: { to: "/courier", label: "Go to Courier" },
   },
   {
+    id: "payments",
+    title: "How payments work",
+    summary: "Pay once in the app; your money is held until handover.",
+    steps: [
+      { title: "Seller confirms first", body: "After you order, the seller confirms the item is available. Sellers must have a confirmed MoMo number to do this." },
+      { title: "Buyers pay once", body: "You pay the item, delivery and a small service fee (it covers Paystack and MoMo payout costs) in one checkout. The total is shown before you pay." },
+      { title: "Money is held safely", body: "The seller is paid only when you give the courier your QR or PIN, or confirm pickup. Don’t give the code until you have the item." },
+      { title: "Problems and refunds", body: "Cancel before handover for a full refund. If something is wrong, don’t give the code and report it. Our team decides and the money stays held until then." },
+      { title: "Sellers and couriers", body: "Sellers get the full item price by MoMo at handover. Couriers get delivery fees in one weekly MoMo payment. Add your number in Settings." },
+    ],
+    cta: { to: "/settings", label: "Open Settings" },
+  },
+  {
     id: "courier-tasks",
     title: "How couriers carry out a delivery",
     summary: "From accepting a request to getting paid.",
@@ -61,7 +74,7 @@ export const GUIDES: Guide[] = [
       { title: "Accept a request", body: "New delivery requests appear on your Courier page. Open one to see the pickup and drop-off, then accept it." },
       { title: "Pick up the item", body: "Go to the seller, collect the item and tap “I picked it up”." },
       { title: "Hand it over", body: "Meet the buyer, then tap “Confirm handover” and scan their QR code or enter their PIN." },
-      { title: "Get paid", body: "Your payout for each delivery shows under Payouts on the Courier page." },
+      { title: "Get paid", body: "Buyers pay inside the app, so nobody pays you in person. Confirm your MoMo number in Settings. Your delivery fees are sent there in one weekly payment, and each delivery shows under Payouts." },
       { title: "Don’t cancel after accepting", body: "Cancelling an accepted delivery permanently suspends your account. Only accept jobs you can finish." },
     ],
     cta: { to: "/courier", label: "Open Courier board" },

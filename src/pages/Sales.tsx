@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Package, Wallet, CalendarDays, Clock } from "lucide-react";
 import { api } from "../api";
+import { useFlags } from "../flags";
 
 interface Sales {
   sold: number; earned: number; this_month: number; open_orders: number;
@@ -12,6 +13,7 @@ interface Sales {
 export default function SalesPage() {
   const [d, setD] = useState<Sales | null>(null);
   const [err, setErr] = useState("");
+  const flags = useFlags();
   useEffect(() => { api<Sales>("/deliveries/sales").then(setD).catch((e) => setErr(e.message)); }, []);
   if (err) return <p className="text-sm text-red-700">{err}</p>;
   if (!d) return <p className="text-sm">Loading…</p>;
@@ -29,7 +31,7 @@ export default function SalesPage() {
         {tiles.map(({ icon: Icon, label, value }) => <div key={label} className="card rounded-2xl p-3.5"><Icon size={17} className="text-brand" /><p className="mt-2 font-display text-xl font-bold">{value}</p><p className="text-xs text-ink/55">{label}</p></div>)}
       </div>
       {d.top_product && <p className="mt-3 rounded-xl bg-[#e6ebdf] px-3 py-2 text-sm">Best seller: <b>{d.top_product.title}</b> ({d.top_product.count} sold)</p>}
-      <p className="mt-1 text-[11px] text-ink/45">Earnings use each item’s current listing price and exclude delivery fees.</p>
+      <p className="mt-1 text-[11px] text-ink/45">{flags.escrow ? "Buyers pay all fees. You receive each item’s full price by MoMo once the handover is confirmed. Make sure your MoMo number is confirmed in Settings." : "Earnings use each item’s current listing price and exclude delivery fees."}</p>
       <h2 className="mb-2 mt-5 text-sm font-semibold">Completed sales</h2>
       {d.items.length === 0 ? <p className="card rounded-2xl px-5 py-8 text-center text-sm text-ink/60">No completed sales yet.</p> : (
         <ul className="space-y-2">{d.items.map((i) => (

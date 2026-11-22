@@ -6,6 +6,19 @@
   "background_color": "#f6f4ee",
   "theme_color": "#1f5d3a",
   "icons": [
-    { "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg", "sizes": "any", "type": "image/jpeg" }
-  ]
+    {
+      "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://vkhgvaencdidocddyorp.supabase.co/storage/v1/object/public/knust-mart/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "id": "/",
+  "scope": "/"
 }

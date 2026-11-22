@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MapPin, X } from "lucide-react";
 import { api, Card, HALLS, HOSTELS, mediaUrl, Meta } from "../api";
 import { useAuth } from "../auth";
+import { useFlags } from "../flags";
 import { useToast } from "./Toast";
 import LocationPicker from "./LocationPicker";
 const CAMPUS_NAMES = [...HALLS, ...HOSTELS, "Evandy", "Queen Elizabeth II", "Main Library", "Student Union Building"].map((n) => n.toLowerCase());
@@ -22,18 +23,22 @@ export default function OrderModal({
 }) {
   const { me } = useAuth();
   const navigate = useNavigate();
+  const flags = useFlags();
   const notify = useToast();
   const [location, setLocation] = useState("");
-  const [fulfillment, setFulfillment] = useState<"courier" | "pickup">("courier");
+  const [chosen, setFulfillment] = useState<"courier" | "pickup">("courier");
+  const fulfillment: "courier" | "pickup" = flags.courier ? chosen : "pickup";
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [compare, setCompare] = useState(false);
   const [note, setNote] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const image = product.images?.[0] ?? product.image;
   const pickupLocation = product.seller.pickup_location || product.hall_location;
   const isMine = me?.id === product.seller.id;
+  const deliveryFee = fulfillment === "courier" ? (meta?.delivery_fee ?? 5) : 0;
+  const estBase = Math.round((product.price + deliveryFee) * 100);
+  const estTotal = Math.ceil((estBase + (fulfillment === "courier" ? 200 : 100)) / (1 - 0.0195)) / 100; // matches the server quote
   const isAvailable = !product.status || product.status === "active";
 
   useEffect(() => {
@@ -60,13 +65,12 @@ export default function OrderModal({
           pickup_location: pickupLocation,
           dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,
-          choose_courier: fulfillment === "courier" && compare,
           dropoff_note: fulfillment === "courier" && note.trim() ? note.trim() : undefined,
           color: color || undefined,
           size: size || undefined,
         },
       });
-      notify("Order requested", fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item + delivery), by MoMo or cash. Only pay once the item is in your hand.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect it.`);
+      notify("Order requested", flags.escrow ? "The seller will confirm the item is available. Then you pay once here in the app, and your money is held until the handover." : fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item + delivery), by MoMo or cash. Only pay once the item is in your hand.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect it.`);
       navigate(`/orders/${delivery.id}`);
     } catch (cause) {
       setError((cause as Error).message);
@@ -98,8 +102,8 @@ export default function OrderModal({
             : !isAvailable ? <p className="text-sm font-semibold text-red-700">This listing is no longer available.</p>
               : me ? <>
                 {([["Colour", product.colors, color, setColor], ["Size", product.sizes, size, setSize]] as const).map(([label, list, value, set]) => list && list.length > 0 && <div key={label}><p className="mb-1 text-xs font-semibold text-ink/60">{label}</p><div className="flex flex-wrap gap-1.5">{list.map((v) => <button key={v} type="button" aria-pressed={value === v} onClick={() => set(v)} className={`rounded-full border px-3 py-1 text-xs font-semibold ${value === v ? "border-brand bg-brand text-white" : "border-line bg-white text-ink/70"}`}>{v}</button>)}</div></div>)}
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" aria-pressed={fulfillment === "courier"} onClick={() => setFulfillment("courier")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "courier" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Courier · GH₵{meta?.delivery_fee.toFixed(2) ?? "–"}</button>
+                <div className={`grid gap-2 ${flags.courier ? "grid-cols-2" : "grid-cols-1"}`}>
+                  {flags.courier && <button type="button" aria-pressed={fulfillment === "courier"} onClick={() => setFulfillment("courier")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "courier" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Courier · GH₵{meta?.delivery_fee.toFixed(2) ?? "–"}</button>}
                   <button type="button" aria-pressed={fulfillment === "pickup"} onClick={() => setFulfillment("pickup")} className={`rounded-xl border px-3 py-2 text-sm font-semibold ${fulfillment === "pickup" ? "border-brand bg-brand/5 text-brand" : "border-line text-ink/60"}`}>Pickup · Free</button>
                 </div>
                 {fulfillment === "courier" ? (
@@ -115,7 +119,7 @@ export default function OrderModal({
                 )}
                 {fulfillment === "courier" && location && !CAMPUS_NAMES.includes(location.trim().toLowerCase()) && <p role="note" className="rounded-xl bg-[#f0eadc] px-3 py-2.5 text-xs leading-5 text-ink/75">Couriers only deliver between campus halls and hostels. For anywhere else, choose Pickup instead.</p>}
                 {fulfillment === "courier" && <input className="input py-2 text-sm" maxLength={120} placeholder="Room number or landmark (optional)" value={note} onChange={(e) => setNote(e.target.value)} />}
-                {fulfillment === "courier" && <label className="flex items-center gap-2 text-xs text-ink/65"><input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} />Let me compare courier prices (optional)</label>}
+                {flags.escrow && <p className="rounded-xl bg-[#e6ebdf] px-3 py-2 text-xs leading-5 text-ink/75">You pay after the seller confirms: {fulfillment === "courier" ? "item + delivery" : "item"} + a small service fee, about <b>GH₵{estTotal.toFixed(2)}</b> in total. Your money is held safely and only released when you give the courier your code{fulfillment === "pickup" ? " (or confirm pickup)" : ""}.</p>}
                 <button type="button" className="btn-primary w-full" disabled={(fulfillment === "courier" && (!location || !CAMPUS_NAMES.includes(location.trim().toLowerCase()))) || (fulfillment === "pickup" && !pickupLocation) || !meta || busy} onClick={placeOrder}>{busy ? "Ordering…" : "Order"}</button>
               </> : <Link to="/login" state={{ from: `/products/${product.id}` }} className="btn-primary w-full">Sign in to order</Link>}
           {error && <p role="alert" className="text-sm text-red-700">{error}</p>}

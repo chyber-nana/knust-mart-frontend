@@ -17,6 +17,8 @@ const label = (s: string) => s.replace(/_/g, " ").replace(/^\w/, (c) => c.toUppe
 export default function AdminDashboard() {
   const [s, setS] = useState<Stats | null>(null);
   const [err, setErr] = useState("");
+  const [held, setHeld] = useState<{ orders_held: number; money_held: number; owed_to_sellers: number; owed_to_couriers: number; disputed: { id: string }[] } | null>(null);
+  useEffect(() => { api<NonNullable<typeof held>>("/payments/admin/held").then(setHeld).catch(() => undefined); }, []);
   useEffect(() => { api<Stats>("/admin/stats").then(setS).catch((e) => setErr(e.message)); }, []);
 
   return (
@@ -34,6 +36,13 @@ export default function AdminDashboard() {
           <Kpi icon={<Users size={18} />} label="Users" value={s.users.total} note={`${s.users.verified_students} verified students`} />
           <Kpi icon={<Building2 size={18} />} label="Live businesses" value={s.users.live_businesses} note={`${s.users.suspended_or_banned} restricted accounts`} />
         </div>
+
+        {held && <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Kpi icon={<Banknote size={18} />} label="Money held" value={`GH₵${Number(held.money_held).toFixed(2)}`} note={`${held.orders_held} orders`} primary />
+          <Kpi icon={<Users size={18} />} label="Owed to sellers" value={`GH₵${Number(held.owed_to_sellers).toFixed(2)}`} note="released on handover" />
+          <Kpi icon={<Truck size={18} />} label="Owed to couriers" value={`GH₵${Number(held.owed_to_couriers).toFixed(2)}`} note="weekly batch" />
+          <Kpi icon={<ShieldAlert size={18} />} label="Disputed" value={held.disputed.length} note="need a decision" />
+        </div>}
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Panel title="Listings" icon={<Package size={16} />}>
@@ -74,7 +83,7 @@ export default function AdminDashboard() {
   );
 }
 
-function Kpi({ icon, label, value, note, primary }: { icon: ReactNode; label: string; value: number; note: string; primary?: boolean }) {
+function Kpi({ icon, label, value, note, primary }: { icon: ReactNode; label: string; value: number | string; note: string; primary?: boolean }) {
   return <div className={`rounded-2xl border p-4 ${primary ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
     <div className="flex items-center justify-between"><span className={`text-xs font-semibold ${primary ? "text-white/80" : "text-ink/60"}`}>{label}</span><span className={`grid h-8 w-8 place-items-center rounded-[30%] ${primary ? "bg-white/15" : "bg-[#e6ebdf] text-brand"}`}>{icon}</span></div>
     <p className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">{value.toLocaleString()}</p>

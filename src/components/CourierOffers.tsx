@@ -20,7 +20,7 @@ export default function CourierOffers({ deliveryId, onChosen }: { deliveryId: st
     <div className="w-full rounded-2xl bg-[#e6ebdf] p-3.5">
       <p className="flex items-center gap-2 text-sm font-semibold"><Truck size={16} className="text-brand" />Choose your courier</p>
       {offers === null ? <p className="mt-2 text-xs text-ink/60">Loading…</p>
-        : offers.length === 0 ? <p className="mt-2 text-xs leading-5 text-ink/65">Waiting for couriers to send offers. We’ll notify you when one arrives. You pay your courier in person (cash or MoMo).</p>
+        : offers.length === 0 ? <p className="mt-2 text-xs leading-5 text-ink/65">Waiting for couriers to send offers. We’ll notify you when one arrives. </p>
           : <ul className="mt-2 space-y-2">{offers.map((o) => (
             <li key={o.id} className="flex items-center gap-3 rounded-xl bg-white p-3">
               <div className="min-w-0 flex-1">

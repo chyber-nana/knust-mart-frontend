@@ -1,3 +1,5 @@
+import { useFlags } from "./flags";
+import AppPrompt from "./components/AppPrompt";
 import { ReactNode, useEffect, useState } from "react";
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Building2, Compass, LogIn, Megaphone, MessageCircle, PackageCheck, Settings as SettingsIcon, Shield, Truck } from "lucide-react";
@@ -40,6 +42,7 @@ import Terms from "./pages/Terms";
 
 function PublicLayout() {
   const { me, appealOnly, loading } = useAuth();
+  const flags = useFlags();
   const location = useLocation();
   const [scrollProgress, setScrollProgress] = useState(0);
   useEffect(() => {
@@ -117,7 +120,7 @@ function PublicLayout() {
           </Link>
           <div className="ml-auto flex items-center gap-2">
             {me && <NotificationCenter />}
-            {me?.is_courier && <Link data-tour="courier" to="/courier" aria-label="Courier" title="Courier" className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 transition hover:text-brand ${location.pathname === "/courier" ? "text-brand" : "text-ink/70"}`}><Truck size={17} /></Link>}
+            {me?.is_courier && flags.courier && <Link data-tour="courier" to="/courier" aria-label="Courier" title="Courier" className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-white/80 transition hover:text-brand ${location.pathname === "/courier" ? "text-brand" : "text-ink/70"}`}><Truck size={17} /></Link>}
             <ThemeToggle />
             {me?.is_admin && <Link to="/admin" className="hidden rounded-full px-3 py-2 text-xs font-semibold text-ink/60 transition hover:bg-white md:block">Admin</Link>}
             {me?.is_admin && <Link to="/admin" aria-label="Admin dashboard" title="Admin dashboard" className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white/80 text-ink/70 transition hover:text-brand md:hidden"><Shield size={16} /></Link>}
@@ -131,6 +134,7 @@ function PublicLayout() {
         </div>
       </header>
       <main className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-8 sm:py-7 lg:px-12"><div key={location.pathname} className="page-enter"><Outlet /></div></main>
+      <AppPrompt />
       {me && <OrderAlerts />}
       <nav aria-label="Main navigation" className="site-nav fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-[var(--surface)] px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-8px_24px_rgba(28,27,23,.06)] md:static md:mx-auto md:mt-4 md:flex md:w-full md:max-w-[1600px] md:justify-center md:gap-10 md:border-0 md:bg-transparent md:px-12 md:pb-4 md:pt-0 md:shadow-none">
         <div className="mx-auto flex max-w-md items-center justify-around md:max-w-none md:justify-center md:gap-10">
@@ -151,6 +155,12 @@ function PublicLayout() {
       <PushPrompt />
     </div>
   );
+}
+
+function CourierGate({ children }: { children: ReactNode }) {
+  const flags = useFlags();
+  if (!flags.ready) return null;
+  return flags.courier ? <>{children}</> : <div className="mx-auto max-w-md py-16 text-center"><h1 className="font-display text-2xl font-bold">Courier delivery is coming soon</h1><p className="mt-2 text-sm text-ink/60">For now, all orders are pickup. Meet the seller, check the item, and pay on the spot.</p><Link to="/" className="btn-primary mt-5 inline-flex">Back to browsing</Link></div>;
 }
 
 function RequireAuth() {
@@ -210,9 +220,9 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/orders/:id/review" element={<ReviewOrder />} />
           <Route path="/orders/:id" element={<Receipt />} />
-          <Route path="/courier/history" element={<CourierActivity mode="history" />} />
-          <Route path="/courier/payouts" element={<CourierActivity mode="payouts" />} />
-          <Route path="/courier" element={<CourierBoard />} />
+          <Route path="/courier/history" element={<CourierGate><CourierActivity mode="history" /></CourierGate>} />
+          <Route path="/courier/payouts" element={<CourierGate><CourierActivity mode="payouts" /></CourierGate>} />
+          <Route path="/courier" element={<CourierGate><CourierBoard /></CourierGate>} />
         </Route>
       </Route>
     </Routes>
