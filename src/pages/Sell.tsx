@@ -45,7 +45,7 @@ export default function Sell() {
   const uploadCropped = async (file: File) => {
     setBusy(true); setErr("");
     try { const url = await upload(file); setImages((x) => [...x, url].slice(0, 5)); setQueue((q) => q.slice(1)); }
-    catch (x) { setErr((x as Error).message); } finally { setBusy(false); }
+    finally { setBusy(false); } // errors propagate so the crop dialog can show them
   };
   const chooseKind = (k: ListingKind) => {
     setKind(k);
@@ -104,7 +104,7 @@ export default function Sell() {
           <div className="grid grid-cols-3 gap-2">
             {images.map((u) => (
               <div key={u} className="relative aspect-square overflow-hidden rounded-md border border-line">
-                <img src={mediaUrl(u)} alt="" className="h-full w-full object-cover" />
+                <img src={mediaUrl(u)} alt="" className="h-full w-full bg-[#ebe9e2] object-cover" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                 <button aria-label="Remove photo" className="absolute right-1 top-1 rounded bg-white p-0.5 shadow" onClick={() => setImages(images.filter((x) => x !== u))}><X size={14} /></button>
               </div>))}
 {images.length < 5 && <PhotoTiles onChange={addFiles} busy={busy} />}
@@ -172,7 +172,7 @@ export default function Sell() {
         </div>
       </div>
     </div>
-    {cropSrc && <ImageCropDialog src={cropSrc} title="product photo" aspect="product" enhanceable onCancel={() => setQueue((q) => q.slice(1))} onApply={uploadCropped} />}
+    {cropSrc && <ImageCropDialog key={cropSrc} src={cropSrc} title="product photo" aspect="product" enhanceable onCancel={() => setQueue((q) => q.slice(1))} onApply={uploadCropped} />}
     </>
   );
 }

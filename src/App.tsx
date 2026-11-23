@@ -17,6 +17,7 @@ import AdminBadges from "./pages/AdminBadges";
 import AdminUsers from "./pages/AdminUsers";
 import GuidedTour from "./components/GuidedTour";
 import PushPrompt from "./components/PushPrompt";
+import WhatsAppPopup from "./components/WhatsAppPopup";
 import AdminShell from "./pages/AdminShell";
 import AdminDashboard from "./pages/AdminDashboard";
 import Inbox from "./pages/Inbox";
@@ -153,6 +154,7 @@ function PublicLayout() {
       </nav>
       <GuidedTour />
       <PushPrompt />
+      <WhatsAppPopup />
     </div>
   );
 }

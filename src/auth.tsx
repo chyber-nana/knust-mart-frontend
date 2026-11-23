@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const completeAuth = async (token: string) => {
     localStorage.setItem("token", token);
+    try { localStorage.setItem("knust:wa-popup-pending", "1"); } catch { /* ignore */ }
     await refresh();
   };
   const logout = () => { void unlinkPush().finally(() => { localStorage.removeItem("token"); setMe(null); setAppealOnly(false); }); };

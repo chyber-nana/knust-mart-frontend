@@ -17,7 +17,7 @@ interface Props {
   enhanceable?: boolean;
   onCancel: () => void;
   /** Receives the cropped (and optionally enhanced) image as a JPEG file ready to upload. */
-  onApply: (file: File) => void;
+  onApply: (file: File) => void | Promise<void>;
 }
 
 export default function ImageCropDialog({ src, title, aspect, enhanceable = false, onCancel, onApply }: Props) {
@@ -96,8 +96,10 @@ export default function ImageCropDialog({ src, title, aspect, enhanceable = fals
       ctx.drawImage(img, -left / s, -top / s, b.width / s, b.height / s, 0, 0, ow, oh);
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.9));
       if (!blob) throw new Error("Could not export the cropped image.");
-      onApply(new File([blob], `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.jpg`, { type: "image/jpeg" }));
-    } catch (x) { setErr((x as Error).message); setWorking(false); }
+      // Wait for the upload: a failure must show here and unlock the button, not leave it on "Working…".
+      await onApply(new File([blob], `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.jpg`, { type: "image/jpeg" }));
+    } catch (x) { setErr((x as Error).message || "Could not upload this photo. Try again."); }
+    finally { setWorking(false); }
   };
 
   const btn = "grid h-10 w-10 place-items-center rounded-lg border border-line hover:bg-paper";
@@ -134,7 +136,7 @@ export default function ImageCropDialog({ src, title, aspect, enhanceable = fals
 
         <div className="mt-4 flex gap-2 sm:justify-end">
           <button type="button" onClick={onCancel} className="btn-ghost flex-1 sm:flex-none">Cancel</button>
-          <button type="button" onClick={apply} disabled={working} className="btn-primary flex-1 sm:flex-none">{working ? "Working…" : "Use this photo"}</button>
+          <button type="button" onClick={apply} disabled={working} className="btn-primary flex-1 sm:flex-none">{working ? "Uploading…" : "Use this photo"}</button>
         </div>
       </section>
     </div>

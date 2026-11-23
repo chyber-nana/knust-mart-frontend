@@ -20,6 +20,7 @@ export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [typoIgnored, setTypoIgnored] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -46,6 +47,10 @@ export default function Register() {
       setErr("The two email addresses don't match.");
       return;
     }
+    if (!/^\+?[0-9][0-9 ()-]{5,30}$/.test(phone.trim())) {
+      setErr("Enter a valid phone number, e.g. 024 123 4567.");
+      return;
+    }
     if (!isStrongPassword(password)) {
       setErr("Use at least 8 characters with uppercase and lowercase letters, a number, and a symbol.");
       return;
@@ -62,6 +67,7 @@ export default function Register() {
         body: {
           full_name: fullName.trim(),
           email: normalizedEmail,
+          phone_number: phone.trim(),
           password,
           confirm_password: confirmPassword,
           terms_accepted: termsAccepted,
@@ -107,6 +113,12 @@ export default function Register() {
         {studentEmail
           ? <OutlookNotice />
           : <p className="rounded-xl bg-brand/5 px-3.5 py-3 text-xs leading-5 text-ink/65">KNUST students: use your @st.knust.edu.gh or @idl.knust.edu.gh email. Everyone else can use any email and we’ll send a verification link.</p>}
+
+        <label className="block space-y-1.5">
+          <span className="text-sm font-semibold">Phone number (WhatsApp if possible)</span>
+          <input className="input" type="tel" inputMode="tel" autoComplete="tel" placeholder="024 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={32} required />
+          <span className="block text-xs text-ink/60">We only use it to help you get started with KNUST Mart. It is not shown to other users.</span>
+        </label>
 
         <label className="block space-y-1.5">
           <span className="text-sm font-semibold">Password</span>

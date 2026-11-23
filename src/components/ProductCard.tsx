@@ -8,7 +8,7 @@ export default function ProductCard({ p, onClick }: { p: Card; onClick?: () => v
   const kind = kindOf(p.category);
   const content = <>
       <div className="relative aspect-[4/4.3] overflow-hidden bg-[#ebe9e2]">
-        {p.image && <img src={mediaUrl(p.image)} alt={p.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />}
+        {p.image && <img src={mediaUrl(p.image)} alt={p.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" loading="lazy" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />}
         {p.is_promoted && <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.13em] text-gold">Featured</span>}
         <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.1em] text-brand"><KindIcon kind={kind} size={12} />{KIND_LABEL[kind]}</span>
         <button type="button" aria-label="Save item" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }} className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-white/80 bg-white/90 text-ink/65 transition hover:bg-white hover:text-brand"><Heart size={15} /></button>

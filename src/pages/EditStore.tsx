@@ -101,10 +101,8 @@ export default function EditStore() {
       const yField = key === "logo" ? "logo_position_y" : "banner_position_y";
       setF((current) => ({ ...current, [imageField]: url, [xField]: 50, [yField]: 50 }));
       closeCrop();
-    } catch (x) {
-      setErr((x as Error).message);
     } finally {
-      setBusy(false);
+      setBusy(false); // errors propagate so the crop dialog can show them
     }
   };
 

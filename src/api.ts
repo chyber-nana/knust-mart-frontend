@@ -52,16 +52,36 @@ export const whatsappUrl = (number: string) => {
     : digits.startsWith("0") ? `233${digits.slice(1)}` : digits;
   return `https://wa.me/${international}`;
 };
-export async function upload(file: File): Promise<string> {
+const UPLOAD_TIMEOUT_MS = 30_000;
+
+async function uploadOnce(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(BASE + "/uploads", {
-    method: "POST",
-    headers: authHeaders(localStorage.getItem("token")),
-    body: fd,
-  });
-  if (!res.ok) throw await responseError(res);
-  return (await res.json()).url;
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), UPLOAD_TIMEOUT_MS);
+  try {
+    const res = await fetch(BASE + "/uploads", {
+      method: "POST",
+      headers: authHeaders(localStorage.getItem("token")),
+      body: fd,
+      signal: ctl.signal,
+    });
+    if (!res.ok) throw await responseError(res);
+    return (await res.json()).url;
+  } catch (e) {
+    if ((e as { status?: number }).status !== undefined) throw e; // a real answer from the server
+    throw Object.assign(new Error("The upload is slow or your connection dropped. Check your network and try again."), { retryable: true });
+  } finally { clearTimeout(timer); }
+}
+
+/** Uploads one image with a 30 s timeout. Retries once on a network failure or a 5xx from the server. */
+export async function upload(file: File): Promise<string> {
+  try { return await uploadOnce(file); }
+  catch (e) {
+    const err = e as { retryable?: boolean; status?: number };
+    if (!err.retryable && !(err.status && err.status >= 500)) throw e;
+    return uploadOnce(file);
+  }
 }
 
 export interface Seller { id: string; name: string; user_type: string; pickup_location?: string | null; phone_number?: string | null; whatsapp_number?: string | null }
