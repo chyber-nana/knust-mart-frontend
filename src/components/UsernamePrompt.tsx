@@ -37,7 +37,7 @@ export default function UsernamePrompt() {
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
       <div className="card w-full max-w-sm p-5">
         <h2 className="font-display text-xl font-bold">Pick your username</h2>
-        <p className="mt-1 text-sm text-ink/60">Friends will find you with this. You can only set it once.</p>
+        <p className="mt-1 text-sm text-ink/60">Lowercase letters, numbers, _ and . only. You can only set it once.</p>
         <div className="mt-3 flex items-center gap-1 rounded-xl border px-3 py-2">
           <span className="text-ink/50">@</span>
           <input value={name} onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ""))} maxLength={21}
