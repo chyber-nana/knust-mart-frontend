@@ -30,7 +30,7 @@ const tab = params.get("tab") === "friends" ? "friends" : "chats";
     const timer = window.setInterval(refresh, 60000); // slow safety net; live updates arrive over the stream
     return () => { window.removeEventListener("messages:read", refresh); window.clearInterval(timer); };
   }, [load]);
-  useRealtime((event) => { if (event.type === "message") void load(); });
+  useRealtime((event) => { if (event.type === "message" || event.type === "dm") void load(); });
 
   return (
     <div>

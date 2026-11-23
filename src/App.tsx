@@ -40,6 +40,7 @@ import NotificationCenter from "./components/NotificationCenter";
 import OrderAlerts from "./components/OrderAlerts";
 import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
+import DirectChat from "./pages/DirectChat";
 
 function PublicLayout() {
   const { me, appealOnly, loading } = useAuth();
@@ -204,7 +205,7 @@ export default function App() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/vendors/:id" element={<Vendor />} />
         <Route element={<RequireAuth />}>
-          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/inbox" element={<Inbox />} /><Route path="/inbox/dm/:friendId" element={<DirectChat />} />
           <Route path="/chat/:productId/:counterpartId" element={<Chat />} />
           <Route element={<AdminShell />}>
             <Route path="/admin" element={<AdminDashboard />} />

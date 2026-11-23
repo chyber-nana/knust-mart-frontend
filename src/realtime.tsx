@@ -1,6 +1,23 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { BASE } from "./api";
 import { useAuth } from "./auth";
+
+export interface RealtimeDM {
+  id: number;
+  sender_id: string;
+  receiver_id: string;
+  kind: string;
+  body: string | null;
+  created_at: string;
+  expires_at: string | null;
+}
 
 export interface RealtimeNotification {
   id: number;
@@ -23,20 +40,28 @@ export interface RealtimeMessage {
 
 export type RealtimeEvent =
   | { type: "notification"; item: RealtimeNotification }
-  | { type: "message"; message: RealtimeMessage };
+  | { type: "message"; message: RealtimeMessage }
+  | { type: "dm"; message: RealtimeDM };
 
 type Listener = (event: RealtimeEvent) => void;
 
-const RealtimeCtx = createContext<(listener: Listener) => () => void>(() => () => undefined);
+const RealtimeCtx = createContext<(listener: Listener) => () => void>(
+  () => () => undefined,
+);
 
-async function readStream(path: string, onEvent: Listener, signal: AbortSignal) {
+async function readStream(
+  path: string,
+  onEvent: Listener,
+  signal: AbortSignal,
+) {
   const token = localStorage.getItem("token");
   if (!token) return;
   const response = await fetch(BASE + path, {
     headers: { Authorization: `Bearer ${token}`, Accept: "text/event-stream" },
     signal,
   });
-  if (!response.ok || !response.body) throw new Error("Live updates unavailable.");
+  if (!response.ok || !response.body)
+    throw new Error("Live updates unavailable.");
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -47,7 +72,9 @@ async function readStream(path: string, onEvent: Listener, signal: AbortSignal) 
     const chunks = buffer.split("\n\n");
     buffer = chunks.pop() ?? "";
     for (const chunk of chunks) {
-      const dataLine = chunk.split("\n").find((line) => line.startsWith("data:"));
+      const dataLine = chunk
+        .split("\n")
+        .find((line) => line.startsWith("data:"));
       if (!dataLine) continue;
       try {
         const payload = JSON.parse(dataLine.slice(5).trim()) as RealtimeEvent;
@@ -65,7 +92,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   const subscribe = useCallback((listener: Listener) => {
     listeners.current.add(listener);
-    return () => { listeners.current.delete(listener); };
+    return () => {
+      listeners.current.delete(listener);
+    };
   }, []);
 
   useEffect(() => {
@@ -85,7 +114,12 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
         retry = Math.min(retry + 1, 6);
       }
       if (!controller.signal.aborted) {
-        timer = window.setTimeout(() => { void connect(); }, 800 * (retry + 1));
+        timer = window.setTimeout(
+          () => {
+            void connect();
+          },
+          800 * (retry + 1),
+        );
       }
     };
     void connect();
@@ -95,7 +129,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, [me?.id]);
 
-  return <RealtimeCtx.Provider value={subscribe}>{children}</RealtimeCtx.Provider>;
+  return (
+    <RealtimeCtx.Provider value={subscribe}>{children}</RealtimeCtx.Provider>
+  );
 }
 
 export function useRealtime(listener: Listener) {

@@ -17,7 +17,7 @@ export default function InboxBadge() {
     window.addEventListener("messages:read", load);
     return () => window.removeEventListener("messages:read", load);
   }, [load]);
-  useRealtime((event) => { if (event.type === "message" && event.message.receiver_id === me?.id) load(); });
+  useRealtime((event) => { if ((event.type === "message" || event.type === "dm") && event.message.receiver_id === me?.id) load(); });
   if (count < 1) return null;
   return <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[9px] font-bold leading-none text-white">{count > 99 ? "99+" : count}</span>;
 }
