@@ -78,7 +78,7 @@ export default function Sell() {
     catch (x) { setErr((x as Error).message); setBusy(false); }
   };
   const fee = meta && me ? meta.fees[me.user_type] : null;
-  if (me && me.user_type === "external" && !me.store_active) return <BusinessRequired />;
+  if (me && !me.store_active) return <BusinessRequired />;
   return (
     <><div className="mx-auto max-w-xl">
       <div className="mb-5 flex items-start justify-between gap-3"><h1 className="font-display text-2xl font-bold sm:text-3xl">Create a listing</h1><div className="grid h-11 w-11 shrink-0 place-items-center rounded-[30%] bg-[#e6ebdf] font-display text-xl font-bold text-brand">{step + 1}</div></div>
@@ -186,7 +186,7 @@ function BusinessRequired() {
 }
 
 function FeePanel({ fee, userType }: { fee: { listing: number; promotion: number }; userType?: string }) {
-  const business = userType !== "student";
+  const business = userType !== undefined || true; // every seller now needs an active business
   return <div className="flex items-start gap-3 rounded-xl border border-brand/25 bg-brand/5 p-4 text-sm">
     <BadgeCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-brand" />
     <div>
