@@ -40,7 +40,7 @@ export default function UsernamePrompt() {
         <p className="mt-1 text-sm text-ink/60">Friends will find you with this. You can only set it once.</p>
         <div className="mt-3 flex items-center gap-1 rounded-xl border px-3 py-2">
           <span className="text-ink/50">@</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={21}
+          <input value={name} onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ""))} maxLength={21}
             className="w-full bg-transparent outline-none" placeholder="kwame_k" autoFocus />
         </div>
         {status && <p className={`mt-2 text-sm ${status.ok ? "text-green-700" : "text-red-700"}`}>{status.msg}</p>}
