@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, ChatThread } from "../api";
 import { useRealtime } from "../realtime";
+import UsernamePrompt from "../components/UsernamePrompt";
 
 export default function Inbox() {
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -30,6 +31,7 @@ export default function Inbox() {
 
   return (
     <div>
+      <UsernamePrompt />
       <div className="mb-4 flex items-end justify-between gap-3">
         <div><h1 className="font-display text-2xl font-bold">Inbox</h1><p className="text-sm text-ink/60">{unread} unread message{unread === 1 ? "" : "s"}</p></div>
       </div>
