@@ -4,6 +4,7 @@ import { api, Card, Meta, mediaUrl, whatsappUrl } from "../api";
 import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
 import OrderModal from "../components/OrderModal";
+import { usePageMeta } from "../seo";
 import { MessageCircle, Phone } from "lucide-react";
 
 interface Detail extends Card { description: string | null; images: string[]; status: string; colors?: string[]; sizes?: string[] }
@@ -13,6 +14,7 @@ export default function ProductDetail() {
   const nav = useNavigate();
   const { me } = useAuth();
   const [p, setP] = useState<Detail | null>(null);
+  usePageMeta(p ? `${p.title} | GH₵${Number(p.price).toFixed(2)} on KNUST Mart` : undefined, p ? (p.description || `${p.title} for sale on KNUST Mart, the KNUST campus marketplace.`) : undefined);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [big, setBig] = useState(0);
   const [orderOpen, setOrderOpen] = useState(false);
