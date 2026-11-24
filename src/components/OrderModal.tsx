@@ -14,11 +14,12 @@ export default function OrderModal({
   product,
   meta,
   onClose,
+  hintId,
   showProductLink = false,
 }: {
   product: OrderProduct;
   meta: Meta | null;
-  onClose: () => void;
+  onClose: () => void; hintId?: number;
   showProductLink?: boolean;
 }) {
   const { me } = useAuth();
@@ -62,6 +63,7 @@ export default function OrderModal({
         method: "POST",
         body: {
           product_id: product.id,
+          hint_id: hintId,
           pickup_location: pickupLocation,
           dropoff_location: fulfillment === "courier" ? location : undefined,
           fulfillment_type: fulfillment,

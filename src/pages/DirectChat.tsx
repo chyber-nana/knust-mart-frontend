@@ -1,10 +1,37 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, DirectMessage } from "../api";
+import { api, DirectMessage, mediaUrl } from "../api";
 import { useAuth } from "../auth";
 import { useRealtime } from "../realtime";
 
 interface Data { friend: { id: string; username: string; name: string }; messages: DirectMessage[] }
+function HintCard({ m, own, friend, onDecline }: { m: DirectMessage; own: boolean; friend: string; onDecline: () => void }) {
+  const p = m.product!;
+  const open = m.hint_status === "pending";
+  const available = p.status === "active" && (p.stock == null || p.stock > 0);
+  return (
+    <div className={`flex ${own ? "justify-end" : "justify-start"}`}>
+      <div className="w-72 max-w-[85%] overflow-hidden rounded-xl border border-line bg-white">
+        <p className="bg-brand/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">🎁 Hint {own ? "sent" : `from @${friend}`}</p>
+        {p.image && <img src={mediaUrl(p.image)} alt="" className="h-36 w-full object-cover" />}
+        <div className="space-y-1 p-3">
+          <p className="font-semibold">{p.title}</p>
+          <p className="font-display font-bold text-brand">GH₵{p.price.toFixed(2)}</p>
+          {m.body && <p className="text-sm text-ink/70">“{m.body}”</p>}
+          {m.hint_status === "bought" && <p className="text-sm font-semibold text-green-700">✓ Bought</p>}
+          {m.hint_status === "declined" && <p className="text-sm text-ink/60">Not now</p>}
+          {open && !available && <p className="text-sm text-red-700">No longer available</p>}
+          {open && available && own && <p className="text-xs text-ink/60">Waiting for @{friend}…</p>}
+          {open && available && !own && (
+            <div className="flex gap-2 pt-1">
+              <Link to={`/products/${p.id}?hint=${m.id}`} className="btn-primary flex-1 text-center">Buy it for @{friend}</Link>
+              <button onClick={onDecline} className="btn-ghost">Not now</button>
+            </div>)}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DirectChat() {
   const { friendId = "" } = useParams();
@@ -42,6 +69,7 @@ export default function DirectChat() {
     const other = m.sender_id === me?.id ? m.receiver_id : m.sender_id;
     if (other !== friendId) return;
     if (m.sender_id !== me?.id) markRead();
+    if (m.kind === "hint") { void load(); return; }
     setData((cur) => cur && !cur.messages.some((r) => r.id === m.id) ? { ...cur, messages: [...cur.messages, m] } : cur);
   });
 
@@ -70,6 +98,10 @@ export default function DirectChat() {
         <div ref={boxRef} className="max-h-[55vh] min-h-48 space-y-3 overflow-y-auto p-4">
           {visible.map((m) => {
             const own = m.sender_id === me?.id;
+            if (m.kind === "hint" && m.product) {
+              return <HintCard key={m.id} m={m} own={own} friend={data?.friend.username ?? ""}
+                onDecline={async () => { await api(`/dm/hints/${m.id}/decline`, { method: "POST" }); await load(); }} />;
+            }            
             return <div key={m.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[85%] rounded-lg border px-3 py-2 ${own ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
                 <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>

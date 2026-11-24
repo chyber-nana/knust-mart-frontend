@@ -91,4 +91,4 @@ export interface Meta { categories: string[]; conditions: string[]; locations: s
 export interface ChatMessage { id: number; product_id: string; sender_id: string; receiver_id: string; message: string; sent_at: string }
 export interface ChatThread { product_id: string; product_title: string; counterpart_id: string; counterpart_name: string; last_message: string; sent_at: string; unread_count: number }
 export interface Payout { delivery_id: string; product_title: string; amount: number; status: string; created_at: string }
-export interface DirectMessage { id: number; sender_id: string; receiver_id: string; kind: string; body: string | null; created_at: string; expires_at: string | null }
+export interface DirectMessage { id: number; sender_id: string; receiver_id: string; kind: string; body: string | null; created_at: string; expires_at: string | null; hint_status?: string | null; product?: { id: string; title: string; price: number; image: string | null; status: string; stock: number | null } | null }

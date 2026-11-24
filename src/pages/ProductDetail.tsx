@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, Card, Meta, mediaUrl, whatsappUrl } from "../api";
 import { useAuth } from "../auth";
 import SellerBadge from "../components/SellerBadge";
 import OrderModal from "../components/OrderModal";
 import { usePageMeta } from "../seo";
 import { MessageCircle, Phone } from "lucide-react";
+import HintPicker from "../components/HintPicker";
 
 interface Detail extends Card { description: string | null; images: string[]; status: string; colors?: string[]; sizes?: string[] }
 
@@ -21,6 +22,9 @@ export default function ProductDetail() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+    const [hintOpen, setHintOpen] = useState(false);
+  const [params] = useSearchParams();
+  const hintId = Number(params.get("hint")) || undefined;
   useEffect(() => {
     api<Detail>(`/products/${id}`).then(setP).catch((e) => setErr(e.message));
     api<Meta>("/products/meta").then(setMeta).catch(() => {});
@@ -84,6 +88,8 @@ export default function ProductDetail() {
           state={!me ? { from: `/chat/${p.id}/${p.seller.id}` } : undefined}
           className="btn-ghost w-full"
         >Message seller</Link>}
+        {!mine && me && <button type="button" className="btn-ghost w-full" onClick={() => setHintOpen(true)}>🎁 Send as Hint</button>}
+        {hintId && !mine && <p className="rounded-2xl border border-line bg-white p-3 text-sm">A friend asked you to buy this for them. Place the order below.</p>}        
         <p className="rounded-2xl border border-[#d6dfcd] bg-[#edf1e8] p-4 text-xs leading-5 text-ink/70"><b className="text-brand">Meet safely.</b> Choose a busy public campus spot such as the Main Library or Student Union Building. Inspect the item before paying.</p>
         {mine ? <div className="card space-y-3 p-4">
             <p className="text-sm font-semibold">Manage your listing</p>
@@ -103,6 +109,8 @@ export default function ProductDetail() {
           <button type="button" className="btn-primary w-full" onClick={() => { setOrderOpen(true); setErr(""); }}>Order</button>)}
       </div>
       {orderOpen && <OrderModal product={p} meta={meta} onClose={() => setOrderOpen(false)} />}
+      hintId={hintId}
+      {hintOpen && <HintPicker productId={p.id} onClose={() => setHintOpen(false)} />}
     </div>
   );
 }
