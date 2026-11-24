@@ -19,7 +19,8 @@ export default function OrderModal({
 }: {
   product: OrderProduct;
   meta: Meta | null;
-  onClose: () => void; hintId?: number;
+  onClose: () => void;
+  hintId?: number;
   showProductLink?: boolean;
 }) {
   const { me } = useAuth();

@@ -108,8 +108,7 @@ export default function ProductDetail() {
           </div> : p.status !== "active" ? <p className="text-sm font-semibold text-red-700">This item is no longer available.</p> : (
           <button type="button" className="btn-primary w-full" onClick={() => { setOrderOpen(true); setErr(""); }}>Order</button>)}
       </div>
-      {orderOpen && <OrderModal product={p} meta={meta} onClose={() => setOrderOpen(false)} />}
-      hintId={hintId}
+      {orderOpen && <OrderModal product={p} meta={meta} hintId={hintId} onClose={() => setOrderOpen(false)} />}
       {hintOpen && <HintPicker productId={p.id} onClose={() => setHintOpen(false)} />}
     </div>
   );
