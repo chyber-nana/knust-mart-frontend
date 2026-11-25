@@ -27,8 +27,12 @@ const loadImage = (src: string, useCors = true): Promise<HTMLImageElement> =>
       window.clearTimeout(timer);
       reject(new Error("The source image cannot be decoded."));
     };
-    // Bust cache occasionally helps when a CDN/R2 response was incomplete.
-    img.src = src.includes("?") ? `${src}&_t=${Date.now()}` : `${src}?_t=${Date.now()}`;
+    // Only cache-bust http(s) URLs — never blob: or data: (query strings break those).
+    if (/^https?:\/\//i.test(src)) {
+      img.src = src.includes("?") ? `${src}&_t=${Date.now()}` : `${src}?_t=${Date.now()}`;
+    } else {
+      img.src = src;
+    }
   });
 
 const svgImage = async (markup: string): Promise<HTMLImageElement> => {
@@ -103,8 +107,8 @@ export default function VendorCard({ v }: { v: P }) {
           const scale = Math.max(210 / logo.naturalWidth, 210 / logo.naturalHeight);
           const sourceWidth = 210 / scale;
           const sourceHeight = 210 / scale;
-          const sourceX = (logo.naturalWidth - sourceWidth) * (v.logo_position_x ?? 50) / 100;
-          const sourceY = (logo.naturalHeight - sourceHeight) * (v.logo_position_y ?? 50) / 100;
+          const sourceX = ((logo.naturalWidth - sourceWidth) * (v.logo_position_x ?? 50)) / 100;
+          const sourceY = ((logo.naturalHeight - sourceHeight) * (v.logo_position_y ?? 50)) / 100;
           ctx.drawImage(logo, sourceX, sourceY, sourceWidth, sourceHeight, 72, 94, 210, 210);
           ctx.restore();
           logoDrawn = true;
@@ -231,13 +235,7 @@ export default function VendorCard({ v }: { v: P }) {
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
     } catch (x) {
-      const msg = (x as Error).message || "Could not create the card image.";
-      // Friendlier message when the original logo is the problem (we already fall back, so this is rare).
-      if (/cannot be decoded|Could not load image|timed out/i.test(msg)) {
-        setErr("Could not load one of the images for the card. The download will use a default logo if needed — try again.");
-      } else {
-        setErr(msg);
-      }
+      setErr((x as Error).message || "Could not create the card image.");
     } finally {
       setBusy(false);
     }

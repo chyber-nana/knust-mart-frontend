@@ -62,7 +62,11 @@ export default function Vendor() {
         {v.address && <span className="flex items-center gap-1"><MapPin size={14} />{v.address}</span>}
       </div>
       {v.bio && <p className="mt-3 max-w-2xl text-sm">{v.bio}</p>}
-      <section className="mt-6"><h2 className="font-display text-lg font-bold">Store awards</h2><p className="mt-1 text-xs text-ink/55">Achievements earned by this seller on KNUST Mart.</p><UserBadges badges={v.badges} display="awards" /></section><div className="mt-5"><VendorCard v={{ ...v, badges: v.badges }} /></div>
+      <section className="mt-6"><h2 className="font-display text-lg font-bold">Store awards</h2><p className="mt-1 text-xs text-ink/55">Achievements earned by this seller on KNUST Mart.</p><UserBadges badges={v.badges} display="awards" /></section>
+      {/* Business card: only the store owner, and only when they have an active business. */}
+      {me?.id === v.id && me.store_active && (
+        <div className="mt-5"><VendorCard v={{ ...v, badges: v.badges }} /></div>
+      )}
       <section className="mt-8">
         <h2 className="mb-3 font-display text-xl font-bold">Reviews</h2>
         {v.reviews.length === 0 ? <p className="text-sm text-ink/60">No reviews yet.</p> : <ul className="space-y-3">
