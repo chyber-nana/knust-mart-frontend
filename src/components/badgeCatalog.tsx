@@ -46,21 +46,22 @@ export const BADGES: BadgeInfo[] = [
 export const BADGE_BY_KEY: Record<string, BadgeInfo> = Object.fromEntries(BADGES.map((badge) => [badge.key, badge]));
 
 const BADGE_STYLES: Record<string, string> = {
-  pioneer: "border-amber-300/80 bg-gradient-to-br from-amber-50 to-yellow-100 text-amber-900 shadow-amber-900/10",
-  verified_student: "border-sky-300/80 bg-gradient-to-br from-sky-50 to-cyan-100 text-sky-900 shadow-sky-900/10",
-  trusted_vendor: "border-emerald-300/80 bg-gradient-to-br from-emerald-50 to-green-100 text-emerald-900 shadow-emerald-900/10",
-  sales_20: "border-violet-300/80 bg-gradient-to-br from-violet-50 to-fuchsia-100 text-violet-900 shadow-violet-900/10",
-  power_seller: "border-orange-300/80 bg-gradient-to-br from-orange-50 to-amber-100 text-orange-900 shadow-orange-900/10",
-  fast_responder: "border-cyan-300/80 bg-gradient-to-br from-cyan-50 to-teal-100 text-teal-900 shadow-teal-900/10",
-  top_rated: "border-rose-300/80 bg-gradient-to-br from-rose-50 to-pink-100 text-rose-900 shadow-rose-900/10",
-  campus_legend: "border-yellow-400/80 bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 text-amber-950 shadow-amber-900/15",
+  // Soft, low-saturation fills — keep identity colours without loud gradients.
+  pioneer: "border-amber-200/70 bg-amber-50/90 text-amber-800/90 shadow-none",
+  verified_student: "border-sky-200/70 bg-sky-50/90 text-sky-800/90 shadow-none",
+  trusted_vendor: "border-emerald-200/70 bg-emerald-50/90 text-emerald-800/90 shadow-none",
+  sales_20: "border-violet-200/70 bg-violet-50/90 text-violet-800/90 shadow-none",
+  power_seller: "border-orange-200/70 bg-orange-50/90 text-orange-800/90 shadow-none",
+  fast_responder: "border-cyan-200/70 bg-cyan-50/90 text-cyan-800/90 shadow-none",
+  top_rated: "border-rose-200/70 bg-rose-50/90 text-rose-800/90 shadow-none",
+  campus_legend: "border-amber-200/80 bg-amber-50 text-amber-900/90 shadow-none",
 };
 
 export function BadgePill({ icon: iconName, label, size = "sm" }: { icon: string; label: string; size?: "sm" | "lg" }) {
   const known = BADGE_BY_KEY[iconName];
-  const style = BADGE_STYLES[iconName] ?? "border-slate-300 bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800";
+  const style = BADGE_STYLES[iconName] ?? "border-slate-200/80 bg-slate-50/90 text-slate-700 shadow-none";
   return (
-    <span title={known?.description ?? label} className={`inline-flex max-w-full items-center gap-1.5 border font-semibold shadow-sm ${style} ${size === "lg" ? "rounded-xl px-3 py-2 text-xs" : "rounded-full px-2.5 py-1.5 text-[10px]"}`}>
+    <span title={known?.description ?? label} className={`inline-flex max-w-full items-center gap-1.5 border font-semibold ${style} ${size === "lg" ? "rounded-xl px-3 py-2 text-xs" : "rounded-full px-2.5 py-1.5 text-[10px]"}`}>
       <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/65"><BadgeIcon name={iconName} size={size === "lg" ? 14 : 12} /></span>
       <span className="truncate">{label}</span>
     </span>
