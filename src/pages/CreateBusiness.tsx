@@ -21,10 +21,16 @@ export default function CreateBusiness() {
   const [businessTermsAccepted, setBusinessTermsAccepted] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  
 
   useEffect(() => { api<Activation>("/stores/activation").then(setInfo).catch((x) => setErr((x as Error).message)); }, []);
   useEffect(() => { if (info?.active) nav("/store/edit", { replace: true }); }, [info]);
-
+  useEffect(() => {
+    const reset = (e: PageTransitionEvent) => { if (e.persisted) setBusy(false); };
+    window.addEventListener("pageshow", reset);
+    return () => window.removeEventListener("pageshow", reset);
+  }, []);
+  
   const free = (info?.free_slots_left ?? 0) > 0;
 
   const submit = async (e: FormEvent) => {

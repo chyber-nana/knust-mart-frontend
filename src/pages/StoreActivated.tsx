@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { api } from "../api";
 import { useAuth } from "../auth";
 
-type State = "checking" | "active" | "flagged" | "timeout" | "error";
+type State = "checking" | "active" | "flagged" | "failed" | "timeout" | "error";
 
 export default function StoreActivated() {
   const [params] = useSearchParams();
@@ -29,6 +29,15 @@ const productId = params.get("product");
           if (order && result.status === "success" && result.delivery_id) { navigate(`/orders/${result.delivery_id}`, { replace: true }); return; }
           if (promotion || courier || order ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
           if (result.status === "flagged") { if (alive) setState("flagged"); return; }
+        {state === "failed" && <>
+          <AlertTriangle className="mx-auto text-red-600" size={36} aria-hidden="true" />
+          <h1 className="mt-4 font-display text-xl font-bold">Payment wasn’t completed</h1>
+          <p className="mt-2 text-sm text-ink/65">{courier ? "Courier mode wasn’t switched on." : promotion ? "Your listing wasn’t promoted." : "Your business wasn’t created."} If you were charged, it will switch on automatically once the payment is confirmed.</p>
+          <div className="mt-5 flex flex-col gap-2">
+            <Link to={courier ? "/courier" : promotion ? (productId ? `/products/${productId}` : "/") : "/store/create"} className="btn-primary">Try again</Link>
+            <Link to="/" className="btn-ghost">Back to browsing</Link>
+          </div>
+        </>}          
         } catch (x) {
           if (alive) { setErr((x as Error).message); setState("error"); }
           return;
@@ -88,6 +97,15 @@ const productId = params.get("product");
           <p role="alert" className="mt-2 text-sm text-red-700">{err}</p>
           <Link to={courier ? "/courier" : "/store/create"} className="btn-ghost mt-5 inline-flex">{courier ? "Back to courier" : "Back to checkout"}</Link>
         </>}
+        {state === "failed" && <>
+          <AlertTriangle className="mx-auto text-red-600" size={36} aria-hidden="true" />
+          <h1 className="mt-4 font-display text-xl font-bold">Payment wasn’t completed</h1>
+          <p className="mt-2 text-sm text-ink/65">{courier ? "Courier mode wasn’t switched on." : promotion ? "Your listing wasn’t promoted." : "Your business wasn’t created."} If you were charged, it will switch on automatically once the payment is confirmed.</p>
+          <div className="mt-5 flex flex-col gap-2">
+            <Link to={courier ? "/courier" : promotion ? (productId ? `/products/${productId}` : "/") : "/store/create"} className="btn-primary">Try again</Link>
+            <Link to="/" className="btn-ghost">Back to browsing</Link>
+          </div>
+        </>}        
       </div>
     </div>
   );
