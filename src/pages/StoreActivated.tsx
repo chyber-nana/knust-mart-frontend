@@ -12,6 +12,7 @@ export default function StoreActivated() {
   const promotion = params.get("purpose") === "promotion";
 const courier = params.get("purpose") === "courier";
 const order = params.get("purpose") === "order";
+const momoSetup = params.get("purpose") === "momo_setup";
 const navigate = useNavigate();
 const productId = params.get("product");
   const { refresh } = useAuth();
@@ -25,19 +26,12 @@ const productId = params.get("product");
       // The webhook can arrive a moment after the redirect, so check a few times.
       for (let i = 0; i < 10 && alive; i++) {
         try {
-          const result = await api<{ status: string; store_active: boolean; courier_active?: boolean; delivery_id?: string | null }>(`/payments/verify/${encodeURIComponent(reference)}`);
+          const result = await api<{ status: string; store_active: boolean; courier_active?: boolean; momo_confirmed?: boolean; delivery_id?: string | null }>(`/payments/verify/${encodeURIComponent(reference)}`);
           if (order && result.status === "success" && result.delivery_id) { navigate(`/orders/${result.delivery_id}`, { replace: true }); return; }
+          if (momoSetup && result.status === "success" && result.momo_confirmed) { await refresh(); if (alive) setState("active"); return; }
           if (promotion || courier || order ? result.status === "success" : result.store_active) { await refresh(); if (alive) setState("active"); return; }
           if (result.status === "flagged") { if (alive) setState("flagged"); return; }
-        {state === "failed" && <>
-          <AlertTriangle className="mx-auto text-red-600" size={36} aria-hidden="true" />
-          <h1 className="mt-4 font-display text-xl font-bold">Payment wasn’t completed</h1>
-          <p className="mt-2 text-sm text-ink/65">{courier ? "Courier mode wasn’t switched on." : promotion ? "Your listing wasn’t promoted." : "Your business wasn’t created."} If you were charged, it will switch on automatically once the payment is confirmed.</p>
-          <div className="mt-5 flex flex-col gap-2">
-            <Link to={courier ? "/courier" : promotion ? (productId ? `/products/${productId}` : "/") : "/store/create"} className="btn-primary">Try again</Link>
-            <Link to="/" className="btn-ghost">Back to browsing</Link>
-          </div>
-        </>}          
+          if (result.status === "failed") { if (alive) setState("failed"); return; }
         } catch (x) {
           if (alive) { setErr((x as Error).message); setState("error"); }
           return;
@@ -58,7 +52,12 @@ const productId = params.get("product");
           <p className="mt-2 text-sm text-ink/65">This usually takes a few seconds. Please don’t close this page.</p>
         </>}
         {state === "active" && <>
-          {courier ? <>
+          {momoSetup ? <>
+            <CheckCircle2 className="mx-auto text-brand" size={42} aria-hidden="true" />
+            <h1 className="mt-4 font-display text-xl font-bold">Payout MoMo registered</h1>
+            <p className="mt-2 text-sm text-ink/65">Your GH₵10 setup payment was confirmed and Paystack created your transfer recipient. Your account can now receive seller payouts.</p>
+            <div className="mt-5 flex flex-col gap-2"><Link to="/settings" className="btn-primary">Return to Settings</Link></div>
+          </> : courier ? <>
   <CheckCircle2 className="mx-auto text-brand" size={42} aria-hidden="true" />
   <h1 className="mt-4 font-display text-xl font-bold">You’re a courier</h1>
   <p className="mt-2 text-sm text-ink/65">Payment received. Courier mode is on and you can start accepting deliveries.</p>
@@ -79,10 +78,10 @@ const productId = params.get("product");
         {state === "timeout" && <>
           <AlertTriangle className="mx-auto text-gold" size={36} aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">We haven’t seen your payment yet</h1>
-          <p className="mt-2 text-sm text-ink/65">If you were charged, your store will switch on automatically within a few minutes. If you cancelled, you can try again.</p>
+          <p className="mt-2 text-sm text-ink/65">{momoSetup ? "If you were charged, check your payout setup again in a moment or contact support with your reference." : "If you were charged, your store will switch on automatically within a few minutes. If you cancelled, you can try again."}</p>
           <div className="mt-5 flex flex-col gap-2">
             <button className="btn-primary" onClick={() => window.location.reload()}>Check again</button>
-            <Link to={courier ? "/courier" : "/store/create"} className="btn-ghost">{courier ? "Back to courier" : "Back to checkout"}</Link>
+            <Link to={momoSetup ? "/settings" : courier ? "/courier" : "/store/create"} className="btn-ghost">{momoSetup ? "Back to Settings" : courier ? "Back to courier" : "Back to checkout"}</Link>
           </div>
         </>}
         {state === "flagged" && <>
@@ -100,9 +99,9 @@ const productId = params.get("product");
         {state === "failed" && <>
           <AlertTriangle className="mx-auto text-red-600" size={36} aria-hidden="true" />
           <h1 className="mt-4 font-display text-xl font-bold">Payment wasn’t completed</h1>
-          <p className="mt-2 text-sm text-ink/65">{courier ? "Courier mode wasn’t switched on." : promotion ? "Your listing wasn’t promoted." : "Your business wasn’t created."} If you were charged, it will switch on automatically once the payment is confirmed.</p>
+          <p className="mt-2 text-sm text-ink/65">{momoSetup ? "Your payout MoMo account was not registered." : courier ? "Courier mode wasn’t switched on." : promotion ? "Your listing wasn’t promoted." : "Your business wasn’t created."} If you were charged, contact support with your payment reference.</p>
           <div className="mt-5 flex flex-col gap-2">
-            <Link to={courier ? "/courier" : promotion ? (productId ? `/products/${productId}` : "/") : "/store/create"} className="btn-primary">Try again</Link>
+            <Link to={momoSetup ? "/settings" : courier ? "/courier" : promotion ? (productId ? `/products/${productId}` : "/") : "/store/create"} className="btn-primary">Try again</Link>
             <Link to="/" className="btn-ghost">Back to browsing</Link>
           </div>
         </>}        

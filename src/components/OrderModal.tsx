@@ -60,7 +60,7 @@ export default function OrderModal({
     setBusy(true);
     setError("");
     try {
-      const delivery = await api<{ id: string }>("/deliveries", {
+      const delivery = await api<{ id: string; payment_mode?: "in_app" | "in_person" }>("/deliveries", {
         method: "POST",
         body: {
           product_id: product.id,
@@ -73,7 +73,7 @@ export default function OrderModal({
           size: size || undefined,
         },
       });
-      notify("Order requested", flags.escrow ? "The seller will confirm the item is available. Then you pay once here in the app, and your money is held until the handover." : fulfillment === "courier" ? `Pay at handover: GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} (item + delivery), by MoMo or cash. Only pay once the item is in your hand.` : `Pay GH₵${product.price.toFixed(2)} to the seller by MoMo or cash when you collect it.`);
+      notify("Order requested", delivery.payment_mode === "in_app" ? "The seller will confirm availability. Then pay securely in the app; your money is held until you confirm receipt." : fulfillment === "courier" ? `This seller uses in-person payment. Pay GH₵${(product.price + (meta?.delivery_fee ?? 5)).toFixed(2)} at handover, by MoMo or cash. Only pay once the item is in your hand.` : `This seller uses in-person payment. Pay GH₵${product.price.toFixed(2)} by MoMo or cash when you collect the item.`);
       navigate(`/orders/${delivery.id}`);
     } catch (cause) {
       setError((cause as Error).message);

@@ -204,7 +204,7 @@ export default function Settings() {
         </ul>
       </section>
 
-      {flags.escrow && <MomoForm />}
+      {(flags.escrow || me?.store_active || me?.is_courier || me?.is_admin) && <MomoForm />}
 
       <form onSubmit={saveContacts} className="card space-y-3 p-4 sm:p-5">
         <div><h2 className="font-display text-lg font-bold">Seller contact details</h2><p className="mt-1 text-xs text-ink/60">Buyers can use these details from your storefront and product pages.</p></div>
