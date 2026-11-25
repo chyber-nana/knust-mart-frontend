@@ -4,13 +4,17 @@ import FriendsPanel from "../components/FriendsPanel";
 import { api, ChatThread } from "../api";
 import { useRealtime } from "../realtime";
 import UsernamePrompt from "../components/UsernamePrompt";
+import { useAuth } from "../auth";
 
 export default function Inbox() {
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [unread, setUnread] = useState(0);
   const [err, setErr] = useState("");
   const [params, setParams] = useSearchParams();
-const tab = params.get("tab") === "friends" ? "friends" : "chats";
+  const { me } = useAuth();
+  const isExternal = me?.user_type === "external";
+  const tabs: ("chats" | "friends")[] = isExternal ? ["chats"] : ["chats", "friends"];
+  const tab = !isExternal && params.get("tab") === "friends" ? "friends" : "chats";
 
   const load = useCallback(async () => {
     try {
@@ -34,17 +38,17 @@ const tab = params.get("tab") === "friends" ? "friends" : "chats";
 
   return (
     <div>
-      <UsernamePrompt />
+            {!isExternal && <UsernamePrompt />}
       <div className="mb-4 flex items-end justify-between gap-3">
         <div><h1 className="font-display text-2xl font-bold">Inbox</h1><p className="text-sm text-ink/60">{unread} unread message{unread === 1 ? "" : "s"}</p></div>
       </div>
-      <div className="mb-4 flex gap-2">
-  {(["chats", "friends"] as const).map((t) => (
-    <button key={t} onClick={() => setParams(t === "chats" ? {} : { tab: t })}
-      className={`rounded-full px-4 py-1 text-sm font-semibold ${tab === t ? "bg-brand text-white" : "border"}`}>
-      {t === "chats" ? "Chats" : "Friends"}
-    </button>))}
-</div>
+      {tabs.length > 1 && <div className="mb-4 flex gap-2">
+        {tabs.map((t) => (
+          <button key={t} onClick={() => setParams(t === "chats" ? {} : { tab: t })}
+            className={`rounded-full px-4 py-1 text-sm font-semibold ${tab === t ? "bg-brand text-white" : "border"}`}>
+            {t === "chats" ? "Chats" : "Friends"}
+          </button>))}
+      </div>}
 {tab === "friends" ? <FriendsPanel /> : <>
       {err && <p role="alert" className="mb-3 text-sm text-red-700">{err}</p>}
       {threads.length === 0 ? <p className="card p-5 text-sm text-ink/70">No conversations yet.</p> : (

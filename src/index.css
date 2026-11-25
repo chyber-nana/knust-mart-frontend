@@ -306,3 +306,11 @@ html { scroll-padding-top: 4.5rem; }
   .page-enter, .ad-progress, .modal-backdrop, .modal-panel { animation: none; }
   .ad-progress { transform: scaleX(1); }
 }
+/* ---- Sign-up: splash + stepped form ---- */
+@keyframes step-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes splash-pop { 0% { opacity: 0; transform: scale(.7); } 60% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes splash-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.step-rise { animation: step-rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.splash-logo { animation: splash-pop .7s cubic-bezier(.2,.8,.2,1) both; }
+.splash-word { animation: splash-fade .5s .35s both; }
+@media (prefers-reduced-motion: reduce) { .step-rise, .splash-logo, .splash-word { animation: none; } }

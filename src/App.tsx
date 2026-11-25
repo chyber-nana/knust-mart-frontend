@@ -41,6 +41,7 @@ import OrderAlerts from "./components/OrderAlerts";
 import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
 import DirectChat from "./pages/DirectChat";
+import ProductEdit from "./pages/ProductEdit";
 
 function PublicLayout() {
   const { me, appealOnly, loading } = useAuth();
@@ -215,6 +216,7 @@ export default function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
           </Route>
           <Route path="/sell" element={<Sell />} />
+          <Route path="/products/:id/edit" element={<ProductEdit />} />
           <Route path="/store/create" element={<CreateBusiness />} />
           <Route path="/store/activated" element={<StoreActivated />} />
           <Route path="/store/edit" element={<RequireStore><EditStore /></RequireStore>} />

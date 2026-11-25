@@ -83,12 +83,12 @@ export default function ProductDetail() {
           {p.seller.phone_number && <a className="btn-ghost" href={`tel:${p.seller.phone_number}`}><Phone size={16} />Call seller</a>}
           {p.seller.whatsapp_number && <a className="btn-ghost" href={whatsappUrl(p.seller.whatsapp_number)} target="_blank" rel="noreferrer"><MessageCircle size={16} />WhatsApp</a>}
         </div>}
-        {!mine && <Link
+        {!mine && me?.user_type !== "external" && <Link
           to={me ? `/chat/${p.id}/${p.seller.id}` : "/login"}
           state={!me ? { from: `/chat/${p.id}/${p.seller.id}` } : undefined}
           className="btn-ghost w-full"
         >Message seller</Link>}
-        {!mine && me && <button type="button" className="btn-ghost w-full" onClick={() => setHintOpen(true)}>🎁 Send as Hint</button>}
+        {!mine && me && me.user_type !== "external" && <button type="button" className="btn-ghost w-full" onClick={() => setHintOpen(true)}>🎁 Send as Hint</button>}
         {hintId && !mine && <p className="rounded-2xl border border-line bg-white p-3 text-sm">A friend asked you to buy this for them. Place the order below.</p>}        
         <p className="rounded-2xl border border-[#d6dfcd] bg-[#edf1e8] p-4 text-xs leading-5 text-ink/70"><b className="text-brand">Meet safely.</b> Choose a busy public campus spot such as the Main Library or Student Union Building. Inspect the item before paying.</p>
         {mine ? <div className="card space-y-3 p-4">
@@ -100,12 +100,14 @@ export default function ProductDetail() {
                 <option value="active">Active</option><option value="reserved">Reserved</option><option value="sold">Sold</option>
               </select>
             </label>
-            promotion: GH₵{meta?.fees[me!.user_type]?.promotion ?? "–"} one-time. You’ll pay securely with Paystack.
-            {p.is_promoted ? "Already promoted" : busy ? "One moment…" : `Promote for GH₵${meta?.fees[me!.user_type]?.promotion ?? ""}`}
+            <button className="btn-ghost w-full" disabled={busy || p.is_promoted} onClick={promote}>
+              {p.is_promoted ? "Already promoted" : busy ? "One moment…" : `Promote for GH₵${meta?.fees[me!.user_type]?.promotion ?? ""}`}
+            </button>
+            <p className="text-xs text-ink/60">Promotion is a one-time fee. You’ll pay securely with Paystack.</p>
             <button className="btn-danger w-full" disabled={busy} onClick={remove}>Delete listing</button>
             {actionMessage && <p role="status" className="text-sm text-brand">{actionMessage}</p>}
             {err && <p role="alert" className="text-sm text-red-700">{err}</p>}
-          </div> : p.status !== "active" ? <p className="text-sm font-semibold text-red-700">This item is no longer available.</p> : (
+          </div> : p.status !== "active" ? <p className="text-sm font-semibold text-red-700">This item is no longer available.</p> : me?.user_type === "external" ? <p className="text-sm text-ink/60">Non-student accounts can sell on KNUST Mart but can’t buy.</p> : (
           <button type="button" className="btn-primary w-full" onClick={() => { setOrderOpen(true); setErr(""); }}>Order</button>)}
       </div>
       {orderOpen && <OrderModal product={p} meta={meta} hintId={hintId} onClose={() => setOrderOpen(false)} />}
