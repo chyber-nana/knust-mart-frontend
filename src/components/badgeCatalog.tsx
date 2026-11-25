@@ -45,11 +45,24 @@ export const BADGES: BadgeInfo[] = [
 
 export const BADGE_BY_KEY: Record<string, BadgeInfo> = Object.fromEntries(BADGES.map((badge) => [badge.key, badge]));
 
-export function BadgePill({ icon: iconName, label }: { icon: string; label: string }) {
+const BADGE_STYLES: Record<string, string> = {
+  pioneer: "border-amber-300/80 bg-gradient-to-br from-amber-50 to-yellow-100 text-amber-900 shadow-amber-900/10",
+  verified_student: "border-sky-300/80 bg-gradient-to-br from-sky-50 to-cyan-100 text-sky-900 shadow-sky-900/10",
+  trusted_vendor: "border-emerald-300/80 bg-gradient-to-br from-emerald-50 to-green-100 text-emerald-900 shadow-emerald-900/10",
+  sales_20: "border-violet-300/80 bg-gradient-to-br from-violet-50 to-fuchsia-100 text-violet-900 shadow-violet-900/10",
+  power_seller: "border-orange-300/80 bg-gradient-to-br from-orange-50 to-amber-100 text-orange-900 shadow-orange-900/10",
+  fast_responder: "border-cyan-300/80 bg-gradient-to-br from-cyan-50 to-teal-100 text-teal-900 shadow-teal-900/10",
+  top_rated: "border-rose-300/80 bg-gradient-to-br from-rose-50 to-pink-100 text-rose-900 shadow-rose-900/10",
+  campus_legend: "border-yellow-400/80 bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 text-amber-950 shadow-amber-900/15",
+};
+
+export function BadgePill({ icon: iconName, label, size = "sm" }: { icon: string; label: string; size?: "sm" | "lg" }) {
+  const known = BADGE_BY_KEY[iconName];
+  const style = BADGE_STYLES[iconName] ?? "border-slate-300 bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-ink/25 bg-[var(--surface)] py-1 pl-2 pr-2.5 text-[11px] font-semibold leading-none text-ink">
-      <BadgeIcon name={iconName} />
-      {label}
+    <span title={known?.description ?? label} className={`inline-flex max-w-full items-center gap-1.5 border font-semibold shadow-sm ${style} ${size === "lg" ? "rounded-xl px-3 py-2 text-xs" : "rounded-full px-2.5 py-1.5 text-[10px]"}`}>
+      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/65"><BadgeIcon name={iconName} size={size === "lg" ? 14 : 12} /></span>
+      <span className="truncate">{label}</span>
     </span>
   );
 }

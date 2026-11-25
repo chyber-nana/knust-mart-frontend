@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MapPin, MessageCircle, Pencil, Phone, Plus, Share2, Star } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, Pencil, Phone, Plus, Share2, Star } from "lucide-react";
 import { api, Card, mediaUrl, whatsappUrl } from "../api";
 import { useAuth } from "../auth";
 import ProductCard from "../components/ProductCard";
@@ -10,7 +10,7 @@ import Avatar from "../components/Avatar";
 import { DefaultBanner } from "../components/DefaultVisuals";
 import UserBadges from "../components/UserBadges";
 
-interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; phone_number: string | null; whatsapp_number: string | null; badges: string[]; logo_url: string | null; logo_position_x: number; logo_position_y: number; banner_url: string | null; banner_position_x: number; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
+interface V { id: string; name: string; user_type: string; bio: string | null; address: string | null; phone_number: string | null; whatsapp_number: string | null; badges: string[]; payout_verified?: boolean; logo_url: string | null; logo_position_x: number; logo_position_y: number; banner_url: string | null; banner_position_x: number; banner_position_y: number; sales: number; rating: number | null; review_count: number; reviews: { id: number; reviewer_name: string; rating: number; comment: string | null }[]; products: Card[] }
 
 export default function Vendor() {
   const { id } = useParams();
@@ -43,7 +43,7 @@ export default function Vendor() {
         <div className="absolute -bottom-8 left-4 z-10 rounded-[30%] border-4 border-paper shadow-sm sm:-bottom-10 sm:left-6"><Avatar src={v.logo_url} name={v.name} size="lg" positionX={v.logo_position_x} positionY={v.logo_position_y} /></div>
       </div>
       <div className="flex flex-wrap items-end gap-3 px-3 sm:px-6">
-        <div className="min-w-0 flex-1 pb-1"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1><SellerBadge type={v.user_type} /><UserBadges badges={v.badges} /></div>
+        <div className="min-w-0 flex-1 pb-1"><div className="flex flex-wrap items-center gap-2"><h1 className="truncate font-display text-2xl font-bold sm:text-3xl">{v.name}</h1>{v.payout_verified && <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-800"><BadgeCheck size={12}/> Payout verified</span>}</div><SellerBadge type={v.user_type} /><UserBadges badges={v.badges} /></div>
         <div className="flex w-full items-center gap-2 pb-1 sm:w-auto">
           {me?.id === v.id && (me.store_active || me.user_type !== "external") && <Link data-tour="add-product" to="/sell" className="btn-primary min-w-0 flex-1 whitespace-nowrap sm:flex-none"><Plus size={16} />Add product</Link>}
           {me?.id === v.id && !me.store_active && <Link to="/store/create" className={`${me.user_type === "external" ? "btn-primary" : "btn-ghost"} min-w-0 flex-1 whitespace-nowrap sm:flex-none`}>Create business</Link>}
@@ -62,7 +62,7 @@ export default function Vendor() {
         {v.address && <span className="flex items-center gap-1"><MapPin size={14} />{v.address}</span>}
       </div>
       {v.bio && <p className="mt-3 max-w-2xl text-sm">{v.bio}</p>}
-      <div className="mt-5"><VendorCard v={{ ...v, badges: v.badges }} /></div>
+      <section className="mt-6"><h2 className="font-display text-lg font-bold">Store awards</h2><p className="mt-1 text-xs text-ink/55">Achievements earned by this seller on KNUST Mart.</p><UserBadges badges={v.badges} display="awards" /></section><div className="mt-5"><VendorCard v={{ ...v, badges: v.badges }} /></div>
       <section className="mt-8">
         <h2 className="mb-3 font-display text-xl font-bold">Reviews</h2>
         {v.reviews.length === 0 ? <p className="text-sm text-ink/60">No reviews yet.</p> : <ul className="space-y-3">

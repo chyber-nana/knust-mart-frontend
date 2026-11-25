@@ -6,7 +6,7 @@ import { disablePush, enablePush, pushState, PushState } from "../push";
 import { START_TOUR_EVENT } from "../components/GuidedTour";
 import { api } from "../api";
 import { useAuth } from "../auth";
-import { BADGES } from "../components/badgeCatalog";
+import { BADGES, BadgePill } from "../components/badgeCatalog";
 import PasswordChecklist, { isStrongPassword } from "../components/PasswordChecklist";
 import ThemeToggle from "../components/ThemeToggle";
 import LocationPicker from "../components/LocationPicker";
@@ -114,6 +114,11 @@ export default function Settings() {
         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Settings</h1>
       </header>
 
+      <p className="max-w-xl text-sm text-ink/60">Manage your preferences, storefront, payments and account security from one place.</p>
+
+      <details className="card overflow-hidden" open>
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4"><span><span className="block text-sm font-bold">Preferences &amp; help</span><span className="text-xs text-ink/55">Appearance, notifications and getting started</span></span><span className="text-ink/45">⌄</span></summary>
+        <div className="space-y-3 border-t border-line p-3">
       <section className="card flex items-center justify-between gap-4 p-4">
         <div>
           <h2 className="text-sm font-semibold">Appearance</h2>
@@ -146,6 +151,12 @@ export default function Settings() {
         </div>
       </section>
 
+        </div>
+      </details>
+
+      <details className="card overflow-hidden" open>
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4"><span><span className="block text-sm font-bold">Storefront &amp; selling</span><span className="text-xs text-ink/55">Business profile, payout setup, seller details and achievements</span></span><span className="text-ink/45">⌄</span></summary>
+        <div className="space-y-3 border-t border-line p-3">
       <section className="card divide-y divide-line overflow-hidden">
         <Link to={`/vendors/${me?.id}`} className="flex items-center gap-3 p-4 transition hover:bg-paper">
           <Building2 size={19} className="text-brand" />
@@ -189,11 +200,11 @@ export default function Settings() {
             const has = earned.includes(badge.key);
             return (
               <li key={badge.key} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${has ? "border-ink bg-ink text-[var(--surface)]" : "border-line text-ink/60"}`}>{badge.icon}</span>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-line bg-paper text-ink/70">{badge.icon}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-sm font-semibold">{badge.label}</h3>
-                    {has && <span className="rounded-full border border-brand/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">Earned</span>}
+                    {has ? <BadgePill icon={badge.key} label="Earned" /> : <span className="rounded-full bg-paper px-2 py-1 text-[10px] font-semibold text-ink/50">Not yet earned</span>}
                   </div>
                   <p className="mt-0.5 text-xs text-ink/70">{badge.description}</p>
                   <p className="mt-1 text-xs text-ink/55"><span className="font-semibold text-ink/70">To earn: </span>{badge.criteria}</p>
@@ -215,6 +226,12 @@ export default function Settings() {
         <button type="submit" className="btn-primary" disabled={contactBusy}>{contactBusy ? "Saving…" : "Save contact details"}</button>
       </form>
 
+        </div>
+      </details>
+
+      <details className="card overflow-hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4"><span><span className="block text-sm font-bold">Account &amp; security</span><span className="text-xs text-ink/55">Password, account management and sign out</span></span><span className="text-ink/45">⌄</span></summary>
+        <div className="space-y-3 border-t border-line p-3">
       <form onSubmit={changePassword} className="card space-y-3 p-4 sm:p-5">
         <div className="flex items-center gap-2"><KeyRound size={18} className="text-brand" /><h2 className="font-display text-lg font-bold">Change password</h2></div>
         <label className="block space-y-1 text-sm"><span className="font-medium">Current password</span><input className="input" type="password" autoComplete="current-password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} /></label>
@@ -255,6 +272,8 @@ export default function Settings() {
       )}
 
       <button type="button" onClick={logout} className="btn-ghost w-full text-red-700"><LogOut size={17} />Sign out</button>
+        </div>
+      </details>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { ArrowUpRight, MapPin, Star } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, MapPin, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { mediaUrl } from "../api";
 import Avatar from "./Avatar";
@@ -18,6 +18,7 @@ export interface Business {
   rating: number | null;
   review_count: number;
   active_listings: number;
+  payout_verified?: boolean;
 }
 
 export default function BusinessCard({ business, featured = false }: { business: Business; featured?: boolean }) {
@@ -37,7 +38,7 @@ export default function BusinessCard({ business, featured = false }: { business:
       </div>
       <div className="relative px-4 pb-4 pt-9">
         <ArrowUpRight size={17} className="absolute right-4 top-4 text-ink/35 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand" />
-        <h3 className="truncate pr-6 font-display text-lg font-bold">{business.name}</h3>
+        <div className="flex items-center gap-1.5 pr-6"><h3 className="truncate font-display text-lg font-bold">{business.name}</h3>{business.payout_verified && <span title="Verified payout account" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-800"><BadgeCheck size={11}/> Payout ready</span>}</div>
         {business.bio && <p className="mt-1 line-clamp-1 min-h-5 text-xs text-ink/60">{business.bio}</p>}
         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-ink/60">
           <span className="flex min-w-0 items-center gap-1"><MapPin size={13} className="shrink-0" /><span className="truncate">{business.address || "KNUST campus"}</span></span>
