@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Navigate } from "react-router-dom";
 import { Building2, CheckCircle2, ChevronRight, Copy, Loader2, Mail, MessageCircle, Phone, Search, X, XCircle } from "lucide-react";
 import { api, mediaUrl, whatsappUrl } from "../api";
@@ -169,7 +170,15 @@ function Row({ title, sub, status }: { title: string; sub: string; status: strin
 function ConfirmDialog({ pending, busy, onCancel, onConfirm }: { pending: Pending; busy: boolean; onCancel: () => void; onConfirm: () => void }) {
   const [typed, setTyped] = useState("");
   const blocked = !!pending.typed && typed.trim().toUpperCase() !== pending.typed;
-  return (
+  const cancelRef = useRef(onCancel);
+  cancelRef.current = onCancel;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !busy) { e.stopPropagation(); cancelRef.current(); } };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [busy]);
+  // Rendered into <body>: inside the page, the fade-in wrapper (page-enter) traps it beneath the navbar.
+  return createPortal(
     <div className="modal-backdrop fixed inset-0 z-[75] grid place-items-center bg-black/55 p-4"
       onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onCancel(); }}>
       <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" className="modal-panel card w-full max-w-sm p-5">
@@ -189,7 +198,8 @@ function ConfirmDialog({ pending, busy, onCancel, onConfirm }: { pending: Pendin
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -220,34 +230,38 @@ function UserDrawer({ user, detail, locked, busy, onClose, onModerate, onAnonymi
   ] as const;
   const empty = (text: string) => <p className="py-4 text-sm text-ink/55">{text}</p>;
 
-  return (
+  const whatsapp = user.whatsapp_number || user.phone_number;
+  return createPortal(
     <>
       <div className="modal-backdrop fixed inset-0 z-[64] bg-black/40" onClick={onClose} aria-hidden="true" />
       <aside role="dialog" aria-modal="true" aria-label={`${user.full_name} details`}
-        className="fixed inset-y-0 right-0 z-[65] flex w-full max-w-md flex-col overflow-y-auto bg-[var(--surface)] shadow-2xl">
-        <div className="flex items-start gap-3 px-5 pb-4 pt-5">
-          <Avatar user={user} large />
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate font-display text-xl font-bold">{user.full_name}</h2>
-            <button type="button" onClick={() => copy(user.email)} className="mt-0.5 flex max-w-full items-center gap-1.5 text-sm text-ink/60 hover:text-brand">
-              <span className="truncate">{user.email}</span><Copy size={13} aria-label="Copy email" className="shrink-0" />
-            </button>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <StatusPill status={status} />
-              <Chip>{user.user_type === "student" ? "Student" : "Non-student"}</Chip>
-              {user.is_courier && <Chip>Courier</Chip>}
-              {user.is_admin && <Chip>Admin</Chip>}
+        className="drawer-panel fixed inset-y-0 right-0 z-[65] flex h-[100dvh] w-full flex-col border-l border-line bg-[var(--surface)] shadow-2xl sm:max-w-[32rem] 2xl:max-w-[36rem]">
+        {/* Pinned header: the close button and contact actions stay reachable while the rest scrolls. */}
+        <div className="shrink-0 border-b border-line bg-[var(--surface)] px-5 pb-3 pt-[max(1.25rem,env(safe-area-inset-top))]">
+          <div className="flex items-start gap-3">
+            <Avatar user={user} large />
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate font-display text-xl font-bold">{user.full_name}</h2>
+              <button type="button" onClick={() => copy(user.email)} className="mt-0.5 flex max-w-full items-center gap-1.5 text-sm text-ink/60 hover:text-brand">
+                <span className="truncate">{user.email}</span><Copy size={13} aria-label="Copy email" className="shrink-0" />
+              </button>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <StatusPill status={status} />
+                <Chip>{user.user_type === "student" ? "Student" : "Non-student"}</Chip>
+                {user.is_courier && <Chip>Courier</Chip>}
+                {user.is_admin && <Chip>Admin</Chip>}
+              </div>
             </div>
+            <button type="button" onClick={onClose} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line hover:text-brand"><X size={18} /></button>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line hover:text-brand"><X size={17} /></button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {user.phone_number && <a className="btn-ghost min-h-9 px-3 text-xs" href={`tel:${user.phone_number}`}><Phone size={14} />Call</a>}
+            {whatsapp && <a className="btn-ghost min-h-9 px-3 text-xs" href={whatsappUrl(whatsapp)} target="_blank" rel="noreferrer"><MessageCircle size={14} />WhatsApp</a>}
+            <a className="btn-ghost min-h-9 px-3 text-xs" href={`mailto:${user.email}`}><Mail size={14} />Email</a>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-5 pb-4">
-          {user.phone_number && <a className="btn-ghost min-h-9 px-3 text-xs" href={`tel:${user.phone_number}`}><Phone size={14} />Call</a>}
-          {user.whatsapp_number && <a className="btn-ghost min-h-9 px-3 text-xs" href={whatsappUrl(user.whatsapp_number)} target="_blank" rel="noreferrer"><MessageCircle size={14} />WhatsApp</a>}
-          <a className="btn-ghost min-h-9 px-3 text-xs" href={`mailto:${user.email}`}><Mail size={14} />Email</a>
-        </div>
-
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <Section title="Account">
           <dl className="grid grid-cols-2 gap-3">
             <Info label="Joined" value={fullDate(user.created_at)} />
@@ -331,8 +345,10 @@ function UserDrawer({ user, detail, locked, busy, onClose, onModerate, onAnonymi
             <p className="mt-1">Business terms accepted {fullDate(user.business_terms_accepted_at)} (version {user.business_terms_version || "—"}).</p>
           </details>
         </Section>
+        </div>
       </aside>
-    </>
+    </>,
+    document.body,
   );
 }
 
