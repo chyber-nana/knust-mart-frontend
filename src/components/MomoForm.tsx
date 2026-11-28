@@ -38,7 +38,7 @@ export default function MomoForm() {
     <form onSubmit={submit} className="card space-y-3 p-4 sm:p-5">
       <div>
         <h2 className="font-display text-lg font-bold">Payout MoMo account</h2>
-        <p className="mt-1 text-xs text-ink/60">Register a MoMo account as a Paystack transfer recipient. Seller setup costs GH₵10. This enables buyers to pay in-app; the seller receives the item price after the buyer confirms receipt. Admin test accounts bypass the fee.</p>
+        <p className="mt-1 text-xs text-ink/60">Register a MoMo account as a Paystack transfer recipient. Seller setup costs GH₵10. This enables buyers to pay in-app; the seller receives the item price after the buyer confirms receipt.</p>
       </div>
       {saved?.confirmed && <p className="flex items-start gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-800"><CheckCircle2 size={16} className="mt-0.5 shrink-0" />Verified: {saved.momo_number} ({saved.momo_network?.toUpperCase()}), registered to {saved.momo_name}. Your payout account cannot be removed from a normal seller account. To change it, complete a new verified setup.</p>}
       <div className="flex gap-2">
